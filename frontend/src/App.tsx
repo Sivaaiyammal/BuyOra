@@ -8,7 +8,15 @@ import Settings from './pages/Settings';
 import Orders from './pages/Orders';
 import Profile from './pages/Profile';
 import Chat from './pages/Chat';
+import Product from './pages/product/Product';
+import Category from './pages/product/Category';
+import CreateProduct from './pages/product/CreateProduct';
+import EditProduct from './pages/product/EditProduct';
+import ProductDetails from './pages/product/ProductDetails';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import AdminManager from './pages/AdminManager';
+import './index.css';
+
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -71,6 +79,54 @@ function App() {
             element={
               <ProtectedRoute>
                 {renderWithLayout(<Chat />)}
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/product"
+            element={
+              <ProtectedRoute>
+                {renderWithLayout(<Product />)}
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/product/category"
+            element={
+              <ProtectedRoute>
+                {renderWithLayout(<Category />)}
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/product/create"
+            element={
+              <ProtectedRoute>
+                {renderWithLayout(<CreateProduct />)}
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/product/edit"
+            element={
+              <ProtectedRoute>
+                {renderWithLayout(<EditProduct />)}
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/product/details/:id"
+            element={
+              <ProtectedRoute>
+                {renderWithLayout(<ProductDetails />)}
+              </ProtectedRoute>
+            }
+          />
+           <Route
+            path="/adminmanager"
+            element={
+              <ProtectedRoute>
+                {renderWithLayout(<AdminManager />)}
               </ProtectedRoute>
             }
           />

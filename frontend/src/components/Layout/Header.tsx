@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-import { Search, Bell, MessageSquare, Menu, ChevronLeft } from 'lucide-react';
+import { Search, MessageSquare, Menu, ChevronLeft } from 'lucide-react';
 import UserAvatar from '../common/UserAvatar';
 import Logo from './Logo';
+import Notification from '../common/Notification';
 
 interface HeaderProps {
   collapsed: boolean;
@@ -21,7 +22,9 @@ const Header = ({ collapsed, toggleSidebar }: HeaderProps) => {
           {collapsed ? <Menu size={20} /> : <ChevronLeft size={20} />}
         </button>
         <Logo collapsed={false} />
-        
+        <div className="hidden md:flex items-center space-x-2">
+          <span className="text-lg font-semibold text-gray-800">Welcome Back Admin...</span>
+        </div>
       </div>
       
       <div className="hidden md:flex items-center relative w-64 lg:w-96">
@@ -32,16 +35,9 @@ const Header = ({ collapsed, toggleSidebar }: HeaderProps) => {
           className="w-full py-2 pl-10 pr-4 text-sm bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
         />
       </div>
-
-      <div className="hidden md:flex items-center space-x-2">
-          <span className="text-lg font-semibold text-gray-800">Welcome Back Admin...</span>
-      </div>
       
       <div className="flex items-center space-x-4">
-        <button className="relative text-gray-500 hover:text-gray-700 focus:outline-none">
-          <Bell size={20} />
-          <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-red-500 rounded-full">1</span>
-        </button>
+        <Notification />
         <button 
           onClick={() => navigate('/chat')}
           className="relative text-gray-500 hover:text-gray-700 focus:outline-none"
