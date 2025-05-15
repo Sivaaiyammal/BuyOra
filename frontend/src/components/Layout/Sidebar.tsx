@@ -1,6 +1,6 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { Users, ShoppingBag, ShoppingCart, CreditCard, BarChart2, Tag, UserRound, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, ShoppingBag, ShoppingCart, CreditCard, BarChart2, Tag, UserRound, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface SidebarProps {
@@ -9,33 +9,43 @@ interface SidebarProps {
 
 const Sidebar = ({ collapsed }: SidebarProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   const toggleMenu = (label: string) => {
-    setOpenMenu(openMenu === label ? null : label);
+    setOpenMenu(prev => (prev === label ? null : label));
   };
 
   const menuItems = [
-    { icon: <img src="/icons/dashboard.png" alt="Dashboard" className="w-5 h-5" />, label: 'Dashboard', path: '/' },
-    { icon: <Users size={20} />, label: 'Admin Manager', path: '/adminmanager' },
+    { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/' },
+    { icon: <Users size={20} />, label: 'Admin Manager', path: '/admin' },
     {
-      icon: <Users size={20} />, label: 'Seller', path: '/seller', hasSubmenu: true, submenu: [
-        { label: 'Create', path: '/seller/create' },
-        { label: 'Seller List', path: '/seller/sellerlist' },
+      icon: <Users size={20} />,
+      label: 'Seller',
+      path: '/seller',
+      submenu: [
+        { label: 'Create', path: '/seller?view=create' },
+        { label: 'Seller List', path: '/seller?view=list' }
       ]
     },
     {
-      icon: <ShoppingBag size={20} />, label: 'Product', path: '/product', hasSubmenu: true, submenu: [
+      icon: <ShoppingBag size={20} />,
+      label: 'Product',
+      path: '/product',
+      submenu: [
         { label: 'Category', path: '/product/category' },
         { label: 'New Product Create', path: '/product/create' },
-        { label: 'Edit', path: '/product/edit' },
+        { label: 'Edit', path: '/product/edit' }
       ]
     },
     { icon: <ShoppingCart size={20} />, label: 'Order', path: '/orders' },
     {
-      icon: <CreditCard size={20} />, label: 'Payment', path: '/payment', hasSubmenu: true, submenu: [
-        { label: 'Pending', path: '/payment/pending' },
-        { label: 'Completed', path: '/payment/completed' },
+      icon: <CreditCard size={20} />,
+      label: 'Payment',
+      path: '/payment',
+      submenu: [
+        { label: 'Transactions', path: '/payment/transactions' },
+        { label: 'Settings', path: '/payment/settings' }
       ]
     },
     { icon: <BarChart2 size={20} />, label: 'Report', path: '/report' },
@@ -54,43 +64,58 @@ const Sidebar = ({ collapsed }: SidebarProps) => {
         <ul className="space-y-1">
           {menuItems.map((item, index) => (
             <li key={index}>
-              <div
-                onClick={() => item.hasSubmenu ? toggleMenu(item.label) : null}
-                className={`flex items-center px-4 py-3 cursor-pointer ${collapsed ? 'justify-center' : 'space-x-3'} ${
-                  location.pathname.startsWith(item.path) ? 'bg-[#444] text-white' : 'text-gray-300 hover:bg-[#444] hover:text-white'
-                } transition-colors duration-200`}
-              >
-                <span>{item.icon}</span>
-                {!collapsed && (
-                  <>
-                    <span className="text-sm font-medium">{item.label}</span>
-                    {item.hasSubmenu && (
-                      <span className="ml-auto">
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-                          <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </span>
+              {item.submenu ? (
+                <div>
+                  <div
+                    onClick={() => {
+                      navigate(item.path);
+                      toggleMenu(item.label);
+                    }}
+                    className={`flex items-center px-4 py-3 cursor-pointer ${collapsed ? 'justify-center' : 'space-x-3'} ${
+                      location.pathname.startsWith(item.path) ? 'bg-[#444] text-white' : 'text-gray-300 hover:bg-[#444] hover:text-white'
+                    } transition-colors duration-200`}
+                  >
+                    <span>{item.icon}</span>
+                    {!collapsed && (
+                      <>
+                        <span className="text-sm font-medium flex-1">{item.label}</span>
+                        <span className={`transform transition-transform duration-200 ${openMenu === item.label ? 'rotate-180' : ''}`}>
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                            <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </span>
+                      </>
                     )}
-                  </>
-                )}
-              </div>
-
-              {/* Dropdown Items */}
-              {!collapsed && item.hasSubmenu && openMenu === item.label && (
-                <ul className="ml-10 space-y-1 py-1">
-                  {item.submenu?.map((sub, subIdx) => (
-                    <li key={subIdx}>
-                      <Link
-                        to={sub.path}
-                        className={`block text-sm py-2 px-2 rounded hover:bg-[#555] ${
-                          location.pathname === sub.path ? 'text-white bg-[#555]' : 'text-gray-400'
-                        }`}
-                      >
-                        {sub.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                  </div>
+                  {!collapsed && openMenu === item.label && (
+                    <ul className="ml-12 mt-2 space-y-1">
+                      {item.submenu.map((subItem, subIndex) => (
+                        <li key={subIndex}>
+                          <Link
+                            to={subItem.path}
+                            className={`block px-4 py-2 text-sm rounded-md transition-colors duration-200 ${
+                              location.pathname === subItem.path
+                                ? 'text-white bg-[#444]'
+                                : 'text-gray-300 hover:text-white hover:bg-[#444]'
+                            }`}
+                          >
+                            {subItem.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  to={item.path}
+                  className={`flex items-center px-4 py-3 ${collapsed ? 'justify-center' : 'space-x-3'} ${
+                    location.pathname === item.path ? 'bg-[#444] text-white' : 'text-gray-300 hover:bg-[#444] hover:text-white'
+                  } transition-colors duration-200`}
+                >
+                  <span>{item.icon}</span>
+                  {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
+                </Link>
               )}
             </li>
           ))}

@@ -8,6 +8,7 @@ import Settings from './pages/Settings';
 import Orders from './pages/Orders';
 import Profile from './pages/Profile';
 import Chat from './pages/Chat';
+import Seller from './pages/seller/Seller';
 import Product from './pages/product/Product';
 import Category from './pages/product/Category';
 import CreateProduct from './pages/product/CreateProduct';
@@ -43,7 +44,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route
-            path="/dashboard"
+            path="/"
             element={
               <ProtectedRoute>
                 {renderWithLayout(<Dashboard />)}
@@ -119,6 +120,14 @@ function App() {
             element={
               <ProtectedRoute>
                 {renderWithLayout(<ProductDetails />)}
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/seller"
+            element={
+              <ProtectedRoute>
+                {renderWithLayout(<Seller />)}
               </ProtectedRoute>
             }
           />
