@@ -1,5 +1,7 @@
 // import { useState } from 'react';
 import { Eye, Download, Search, Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
 
 interface Product {
   id: string;
@@ -16,6 +18,7 @@ interface Product {
 }
 
 const EditProduct = () => {
+  const navigate = useNavigate();
   const products: Product[] = [
     {
       id: '#ID5030',
@@ -58,6 +61,12 @@ const EditProduct = () => {
     }
   ];
 
+const handleRowClick = (id: string) => {
+
+const cleanId = id.replace('#', '');
+navigate(`/product/details/${cleanId}`);  
+};
+
   return (
     <div className="bg-white rounded-lg shadow-sm">
       <div className="p-6">
@@ -94,7 +103,7 @@ const EditProduct = () => {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {products.map((product) => (
-                <tr key={product.id} className="hover:bg-gray-50">
+                <tr key={product.id} className="hover:bg-gray-50" onClick={() => handleRowClick(product.id)}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {product.id}
                   </td>

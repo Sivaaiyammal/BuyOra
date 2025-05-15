@@ -15,7 +15,7 @@ import EditProduct from './pages/product/EditProduct';
 import ProductDetails from './pages/product/ProductDetails';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AdminManager from './pages/AdminManager';
-import './index.css';
+// import './index.css';
 
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {

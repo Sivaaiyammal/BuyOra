@@ -26,7 +26,8 @@ interface ProductDetails {
 }
 
 const ProductDetails = () => {
-  useParams();
+  const { id } = useParams() as { id?: string };
+  console.log('Product ID:', id);
   const [selectedColor, setSelectedColor] = useState('Blue');
   const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
 
@@ -61,6 +62,7 @@ const ProductDetails = () => {
       details: 'up to ₹400 on orders of ₹800 and above'
     }
   };
+  
 
   const handleQuantityChange = (size: string, value: number) => {
     setQuantities(prev => ({

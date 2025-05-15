@@ -28,7 +28,7 @@ const Sidebar = ({ collapsed }: SidebarProps) => {
       icon: <ShoppingBag size={20} />, label: 'Product', path: '/product', hasSubmenu: true, submenu: [
         { label: 'Category', path: '/product/category' },
         { label: 'New Product Create', path: '/product/create' },
-        { label: 'Edit', path: '/product/productedit' },
+        { label: 'Edit', path: '/product/edit' },
       ]
     },
     { icon: <ShoppingCart size={20} />, label: 'Order', path: '/orders' },

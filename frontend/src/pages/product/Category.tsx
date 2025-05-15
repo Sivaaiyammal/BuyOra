@@ -104,7 +104,59 @@ const Category = () => {
     }
   ];
 
-  const products = selectedCategory === 'Men Fashion' ? menProducts : womenProducts;
+  const kidsProducts: Product[] = [
+    {
+      id: '13',
+      name: 'Kids T-Shirt',
+      image: 'https://images.pexels.com/photos/1866149/pexels-photo-1866149.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+      inStock: 20
+    },
+    {
+      id: '14',
+      name: 'Kids Shorts',
+      image: 'https://images.pexels.com/photos/1866146/pexels-photo-1866146.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+      inStock: 15
+    },
+    {
+      id: '15',
+      name: 'Kids Jacket',
+      image: 'https://images.pexels.com/photos/1866147/pexels-photo-1866147.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+      inStock: 12
+    }
+  ];
+
+
+  const electronicsProducts: Product[] = [
+    {
+      id: '16',
+      name: 'Smartphone',
+      image: 'https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+      inStock: 30
+    },
+    {
+      id: '17',
+      name: 'Wireless Headphones',
+      image: 'https://images.pexels.com/photos/3394652/pexels-photo-3394652.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+      inStock: 25
+    },
+    {
+      id: '18',
+      name: 'Smartwatch',
+      image: 'https://images.pexels.com/photos/267394/pexels-photo-267394.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+      inStock: 22
+    }
+  ];
+
+    let products: Product[] = [];
+  if (selectedCategory === 'Men Fashion') {
+    products = menProducts;
+  } else if (selectedCategory === 'Women Fashion') {
+    products = womenProducts;
+  } else if (selectedCategory === 'kids Fashion') {
+    products = kidsProducts;
+  } else if (selectedCategory === 'Electronics') {
+    products = electronicsProducts;
+  }
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
