@@ -21,7 +21,7 @@ const Login = () => {
 
     try {
       await login(formData.emailOrPhone, formData.password);
-      navigate('/dashboard');
+      navigate('/');
     } catch (err) {
       setError('Invalid email or password');
     } finally {

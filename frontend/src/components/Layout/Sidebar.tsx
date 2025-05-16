@@ -18,7 +18,7 @@ const Sidebar = ({ collapsed }: SidebarProps) => {
 
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/' },
-    { icon: <Users size={20} />, label: 'Admin Manager', path: '/admin' },
+    { icon: <Users size={20} />, label: 'Admin Manager', path: '/adminmanager' },
     {
       icon: <Users size={20} />,
       label: 'Seller',
@@ -44,8 +44,7 @@ const Sidebar = ({ collapsed }: SidebarProps) => {
       label: 'Payment',
       path: '/payment',
       submenu: [
-        { label: 'Transactions', path: '/payment/transactions' },
-        { label: 'Settings', path: '/payment/settings' }
+        { label: 'Create Invoice', path: '/payment/invoice/create' },
       ]
     },
     { icon: <BarChart2 size={20} />, label: 'Report', path: '/report' },

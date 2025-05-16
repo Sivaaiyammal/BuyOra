@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Layout from './components/Layout/Layout';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import ResetPassword from './pages/ResetPassword';
@@ -16,6 +15,9 @@ import EditProduct from './pages/product/EditProduct';
 import ProductDetails from './pages/product/ProductDetails';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AdminManager from './pages/AdminManager';
+import Payment from './pages/payment/Payment';
+import InvoiceCreate from './pages/payment/InvoiceCreate';
+import Layout from './components/Layout/Layout';
 // import './index.css';
 
 
@@ -136,6 +138,22 @@ function App() {
             element={
               <ProtectedRoute>
                 {renderWithLayout(<AdminManager />)}
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment"
+            element={
+              <ProtectedRoute>
+                {renderWithLayout(<Payment />)}
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment/invoice/create"
+            element={
+              <ProtectedRoute>
+                {renderWithLayout(<InvoiceCreate />)}
               </ProtectedRoute>
             }
           />

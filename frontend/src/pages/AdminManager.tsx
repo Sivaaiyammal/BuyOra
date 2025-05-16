@@ -1,185 +1,148 @@
-import React, { useState, useEffect } from 'react';
-import { format } from 'date-fns';
-import { Pencil, Trash2, Plus } from 'lucide-react';
-import axios from 'axios';
+import { useState } from 'react';
+import { Pencil, Trash2, X } from 'lucide-react';
 
-interface AdminRole {
-  _id: string;
+interface Admin {
+  id: number;
   name: string;
   role: string;
-  email_or_phone: string;
-  password: string;
-  created_at: string;
+  createdAt: string;
+  avatar?: string;
 }
 
-const AdminManager: React.FC = () => {
-  const [roles, setRoles] = useState<AdminRole[]>([]);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [currentRole, setCurrentRole] = useState<AdminRole | null>(null);
-  const [formData, setFormData] = useState({
+interface AdminFormData {
+  name: string;
+  role: 'Super Admin' | 'User';
+  email: string;
+  password: string;
+  phone: string;
+}
+
+const AdminManager = () => {
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [formData, setFormData] = useState<AdminFormData>({
     name: '',
-    role: '',
-    email_or_phone: '',
-    password: ''
+    role: 'User',
+    email: '',
+    password: '',
+    phone: ''
   });
 
-  const API_URL = 'http://localhost:3001/admin-roles';
-
-  useEffect(() => {
-    fetchRoles();
-  }, []);
-
-  const fetchRoles = async () => {
-    try {
-      const res = await axios.get(API_URL);
-      setRoles(res.data);
-    } catch (err) {
-      console.error('Error fetching roles:', err);
+  const [admins] = useState<Admin[]>([
+    {
+      id: 1,
+      name: 'Yuva Raj',
+      role: 'Super Admin',
+      createdAt: 'May 31, 2023',
+      avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+    },
+    {
+      id: 2,
+      name: 'Yuva Raj',
+      role: 'Super Admin',
+      createdAt: 'May 31, 2023'
+    },
+    {
+      id: 3,
+      name: 'Yuva Raj',
+      role: 'Super Admin',
+      createdAt: 'May 31, 2023'
+    },
+    {
+      id: 4,
+      name: 'Yuva Raj',
+      role: 'Super Admin',
+      createdAt: 'May 31, 2023'
+    },
+    {
+      id: 5,
+      name: 'Yuva Raj',
+      role: 'Super Admin',
+      createdAt: 'May 31, 2023'
     }
+  ]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const handleAddRole = async () => {
-    try {
-      const res = await axios.post(API_URL, formData);
-      setRoles([res.data, ...roles]);
-      setFormData({ name: '', role: '', email_or_phone: '', password: '' });
-      setIsAddModalOpen(false);
-    } catch (err) {
-      console.error('Error adding role:', err);
-    }
-  };
-
-  const handleEditRole = async () => {
-    if (!currentRole) return;
-    try {
-      const res = await axios.put(`${API_URL}/${currentRole._id}`, formData);
-      const updated = roles.map((r) => (r._id === currentRole._id ? res.data : r));
-      setRoles(updated);
-      setCurrentRole(null);
-      setFormData({ name: '', role: '', email_or_phone: '', password: '' });
-      setIsEditModalOpen(false);
-    } catch (err) {
-      console.error('Error updating role:', err);
-    }
-  };
-
-  const handleDeleteRole = async (id: string) => {
-    try {
-      await axios.delete(`${API_URL}/${id}`);
-      setRoles(roles.filter((role) => role._id !== id));
-    } catch (err) {
-      console.error('Error deleting role:', err);
-    }
-  };
-
-  const openEditModal = (role: AdminRole) => {
-    setCurrentRole(role);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Form submitted:', formData);
+    setShowAddModal(false);
     setFormData({
-      name: role.name,
-      role: role.role,
-      email_or_phone: role.email_or_phone,
-      password: role.password
+      name: '',
+      role: 'User',
+      email: '',
+      password: '',
+      phone: ''
     });
-    setIsEditModalOpen(true);
   };
-
-  const renderFormFields = () => (
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-        <input
-          type="text"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-        <select
-          value={formData.role}
-          onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md"
-        >
-          <option value="">Select Role</option>
-          <option value="Super User">Super User</option>
-          <option value="User">User</option>
-        </select>
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Email or Phone</label>
-        <input
-          type="text"
-          value={formData.email_or_phone}
-          onChange={(e) => setFormData({ ...formData, email_or_phone: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-        <input
-          type="password"
-          value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md"
-        />
-      </div>
-    </div>
-  );
 
   return (
     <div className="p-6">
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-800">Roles List</h2>
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            <h2 className="text-xl font-semibold">Roles List</h2>
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Role
+              <span>+</span>
+              <span>Add Role</span>
             </button>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead>
-                <tr className="bg-gray-100">
+              <thead className="bg-gray-100">
+                <tr>
                   <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">No</th>
                   <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Name</th>
                   <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Role</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Email / Phone</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Password</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Created At</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Create At</th>
                   <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {roles.map((role, index) => (
-                  <tr key={role._id}>
-                    <td className="px-6 py-4 text-sm text-gray-500">{index + 1}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{role.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{role.role}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{role.email_or_phone}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{role.password}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {format(new Date(role.created_at), 'MMM dd, yyyy')}
+                {admins.map((admin) => (
+                  <tr key={admin.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {admin.id}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="h-8 w-8 rounded-full bg-gray-200 overflow-hidden">
+                          {admin.avatar ? (
+                            <img src={admin.avatar} alt={admin.name} className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center bg-gray-300">
+                              {admin.name.charAt(0)}
+                            </div>
+                          )}
+                        </div>
+                        <div className="ml-3">
+                          <div className="text-sm font-medium text-gray-900">{admin.name}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {admin.role}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {admin.createdAt}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex space-x-3">
-                        <button
-                          onClick={() => openEditModal(role)}
-                          className="text-blue-500 hover:text-blue-700"
-                        >
-                          <Pencil className="w-5 h-5" />
+                        <button className="text-blue-600 hover:text-blue-800">
+                          <Pencil size={18} />
                         </button>
-                        <button
-                          onClick={() => handleDeleteRole(role._id)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 className="w-5 h-5" />
+                        <button className="text-red-600 hover:text-red-800">
+                          <Trash2 size={18} />
                         </button>
                       </div>
                     </td>
@@ -188,41 +151,123 @@ const AdminManager: React.FC = () => {
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
 
-      {/* Add Modal */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Add New Role</h3>
-            {renderFormFields()}
-            <div className="mt-6 flex justify-end space-x-3">
-              <button onClick={() => setIsAddModalOpen(false)} className="px-4 py-2 border border-gray-300 rounded-md">
-                Cancel
-              </button>
-              <button onClick={handleAddRole} className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-                Add Role
-              </button>
+          <div className="mt-6 flex items-center justify-between">
+            <div className="text-sm text-gray-500">
+              Showing 1 Of 6 Results
+            </div>
+            <div className="flex space-x-2">
+              <button className="px-3 py-1 bg-orange-500 text-white rounded">1</button>
+              <button className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">2</button>
+              <button className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">3</button>
+              <button className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">→</button>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Edit Modal */}
-      {isEditModalOpen && (
+      {/* Add Role Modal */}
+      {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Edit Role</h3>
-            {renderFormFields()}
-            <div className="mt-6 flex justify-end space-x-3">
-              <button onClick={() => setIsEditModalOpen(false)} className="px-4 py-2 border border-gray-300 rounded-md">
-                Cancel
-              </button>
-              <button onClick={handleEditRole} className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-                Save Changes
+          <div className="bg-white rounded-lg w-full max-w-md p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold">Add New Role</h3>
+              <button onClick={() => setShowAddModal(false)} className="text-gray-500 hover:text-gray-700">
+                <X size={20} />
               </button>
             </div>
+
+            <form onSubmit={handleSubmit}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Role
+                  </label>
+                  <select
+                    name="role"
+                    value={formData.role}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  >
+                    <option value="Super Admin">Super Admin</option>
+                    <option value="User">User</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Save
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
