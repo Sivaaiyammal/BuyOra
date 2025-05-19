@@ -17,6 +17,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AdminManager from './pages/AdminManager';
 import Payment from './pages/payment/Payment';
 import InvoiceCreate from './pages/payment/InvoiceCreate';
+import Report from './pages/report/Report';
 import Layout from './components/Layout/Layout';
 // import './index.css';
 
@@ -150,14 +151,21 @@ function App() {
             }
           />
           <Route
-            path="/payment/invoice/create"
+            path="/report"
             element={
               <ProtectedRoute>
                 {renderWithLayout(<InvoiceCreate />)}
               </ProtectedRoute>
             }
           />
-
+           <Route
+            path="/payment/invoice/create"
+            element={
+              <ProtectedRoute>
+                {renderWithLayout(<Report />)}
+              </ProtectedRoute>
+            }
+          />
           <Route path="/" element={<Navigate to="/dashboard" />} />
         </Routes>
       </BrowserRouter>
