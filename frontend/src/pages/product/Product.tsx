@@ -16,6 +16,8 @@ interface Product {
   hotDeal?: boolean;
 }
 
+
+
 const Product = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 

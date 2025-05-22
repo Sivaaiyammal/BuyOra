@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, verifyOtp } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -13,6 +13,9 @@ const Login = () => {
     emailOrPhone: '',
     password: ''
   });
+  const [otp, setOtp] = useState('');
+  const [emailForOtp, setEmailForOtp] = useState('');
+  const [showOtpInput, setShowOtpInput] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,10 +23,28 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      await login(formData.emailOrPhone, formData.password);
+      const result = await login(formData.emailOrPhone, formData.password);
+      if (result === 'otp') {
+        setEmailForOtp(formData.emailOrPhone);
+        setShowOtpInput(true);
+      } else {
+        navigate('/');
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOtpSubmit = async () => {
+    setError('');
+    setIsLoading(true);
+    try {
+      await verifyOtp(emailForOtp, otp);
       navigate('/');
-    } catch (err) {
-      setError('Invalid email or password');
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -49,66 +70,89 @@ const Login = () => {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <img
-                  src="/logo.png" 
-                  alt="Buy Ora Logo"
-                  className="mx-auto mb-3"
-                  style={{ maxWidth: "250px" }}
-                />
+              src="/logo.png" 
+              alt="Buy Ora Logo"
+              className="mx-auto mb-3"
+              style={{ maxWidth: "250px" }}
+            />
             <h2 className="text-2xl font-bold text-gray-800">Welcome to BUY-ORA SHOP</h2>
             {error && (
               <p className="mt-4 text-red-600">{error}</p>
             )}
           </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className="mb-6">
-              <label className="block text-gray-700 mb-2">Email or Mobile Number</label>
-              <input
-                type="text"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter your email or phone"
-                value={formData.emailOrPhone}
-                onChange={(e) => setFormData({ ...formData, emailOrPhone: e.target.value })}
-              />
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-gray-700 mb-2">Password</label>
-              <div className="relative">
+          {showOtpInput ? (
+            <div>
+              <div className="mb-6">
+                <label className="block text-gray-700 mb-2">Enter OTP</label>
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type="text"
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter your password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder="6-digit OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
                 />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5 text-gray-500" />
-                  ) : (
-                    <Eye className="w-5 h-5 text-gray-500" />
-                  )}
-                </button>
               </div>
-              <div className="flex justify-end mt-2">
-                <Link to="/reset-password" className="text-blue-600 hover:text-blue-800 text-sm">
-                  Forgot Password?
-                </Link>
-              </div>
+              <button
+                type="button"
+                onClick={handleOtpSubmit}
+                disabled={isLoading}
+                className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-500 via-purple-500 to-orange-500 text-white font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {isLoading ? 'Verifying...' : 'Verify OTP'}
+              </button>
             </div>
+          ) : (
+            <form onSubmit={handleSubmit}>
+              <div className="mb-6">
+                <label className="block text-gray-700 mb-2">Email or Mobile Number</label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your email or phone"
+                  value={formData.emailOrPhone}
+                  onChange={(e) => setFormData({ ...formData, emailOrPhone: e.target.value })}
+                />
+              </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-500 via-purple-500 to-orange-500 text-white font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
-            >
-              {isLoading ? 'Logging in...' : 'Login'}
-            </button>
-          </form>
+              <div className="mb-6">
+                <label className="block text-gray-700 mb-2">Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter your password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5 text-gray-500" />
+                    ) : (
+                      <Eye className="w-5 h-5 text-gray-500" />
+                    )}
+                  </button>
+                </div>
+                <div className="flex justify-end mt-2">
+                  <Link to="/reset-password" className="text-blue-600 hover:text-blue-800 text-sm">
+                    Forgot Password?
+                  </Link>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-500 via-purple-500 to-orange-500 text-white font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {isLoading ? 'Logging in...' : 'Login'}
+              </button>
+            </form>
+          )}
         </div>
       </div>
     </div>

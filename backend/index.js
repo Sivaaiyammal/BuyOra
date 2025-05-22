@@ -1,60 +1,22 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const EmployeeModel = require("./models/Employee");
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 
-// MongoDB connection
-mongoose.connect("mongodb://127.0.0.1:27017/employee", {
+// DB Connection
+mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+  useUnifiedTopology: true
+}).then(() => console.log('MongoDB connected'))
+  .catch(err => console.error(err));
 
-// Login endpoint
-app.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    const user = await EmployeeModel.findOne({ email });
-    if (!user) return res.status(404).json("No record existed");
+// Routes
+const authRoutes = require('./routes/authRoutes');
+app.use('/api/auth', authRoutes);
 
-    if (user.password !== password) return res.status(401).json("Password is incorrect");
-
-    res.status(200).json({ email: user.email, id: user._id });
-  } catch (err) {
-    res.status(500).json("Server error");
-  }
-});
-
-// Register endpoint
-app.post("/register", async (req, res) => {
-  try {
-    const employee = await EmployeeModel.create(req.body);
-    res.status(201).json(employee);
-  } catch (err) {
-    res.status(400).json(err.message);
-  }
-});
-
-app.listen(3001, () => {
-  console.log("Server is running on port 3001");
-});
-
-
-app.post('/reset-password', async (req, res) => {
-  const { email, newPassword } = req.body;
-
-  try {
-    const user = await EmployeeModel.findOne({ email });
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
-    user.password = newPassword;
-    await user.save();
-
-    res.status(200).json({ message: 'Password reset successful' });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-  }
-});
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

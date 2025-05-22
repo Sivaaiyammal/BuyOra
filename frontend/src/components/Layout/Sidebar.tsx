@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { LayoutDashboard, Users, ShoppingBag, ShoppingCart, CreditCard, BarChart2, Tag, UserRound, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -9,11 +10,17 @@ interface SidebarProps {
 
 const Sidebar = ({ collapsed }: SidebarProps) => {
   const location = useLocation();
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   const toggleMenu = (label: string) => {
     setOpenMenu(prev => (prev === label ? null : label));
+  };
+
+  const handleLogout = () => {
+    logout();               // Clear session
+    navigate('/login');     // Redirect to login
   };
 
   const menuItems = [
@@ -105,6 +112,14 @@ const Sidebar = ({ collapsed }: SidebarProps) => {
                     </ul>
                   )}
                 </div>
+              ) : item.label === 'Log Out' ? (
+                <button
+                  onClick={handleLogout}
+                  className={`flex items-center w-full text-left px-4 py-3 ${collapsed ? 'justify-center' : 'space-x-3'} text-gray-300 hover:bg-[#444] hover:text-white transition-colors duration-200`}
+                >
+                  <span>{item.icon}</span>
+                  {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
+                </button>
               ) : (
                 <Link
                   to={item.path}
