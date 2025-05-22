@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, MessageSquare, Menu, ChevronLeft } from 'lucide-react';
 import UserAvatar from '../common/UserAvatar';
@@ -11,6 +12,31 @@ interface HeaderProps {
 
 const Header = ({ collapsed, toggleSidebar }: HeaderProps) => {
   const navigate = useNavigate();
+  const [avatar, setAvatar] = useState("/1747901706239.jpg"); // fallback
+
+  useEffect(() => {
+  const userStr = localStorage.getItem("user");
+  if (userStr) {
+    const user = JSON.parse(userStr);
+    console.log("🧠 Avatar from localStorage:", user.avatar); // <-- Add this
+    if (user.avatar) {
+      const fullUrl = user.avatar.startsWith('http')
+        ? user.avatar
+        : `http://localhost:5000${user.avatar}`;
+      console.log("🌐 Final Avatar URL:", fullUrl); // <-- Add this
+      setAvatar(fullUrl);
+    }
+  }
+}, []);
+
+
+    // Initial load
+  //   updateAvatar();
+
+  //   // Listen for profile update event (optional)
+  //   window.addEventListener("avatar-updated", updateAvatar);
+  //   return () => window.removeEventListener("avatar-updated", updateAvatar);
+  // }, []);
 
   return (
     <header className="bg-white border-b border-gray-200 py-3 px-4 flex items-center justify-between">
@@ -49,7 +75,7 @@ const Header = ({ collapsed, toggleSidebar }: HeaderProps) => {
           className="focus:outline-none"
         >
           <UserAvatar 
-            imageUrl="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+            imageUrl={avatar}
             size="md"
           />
         </button>

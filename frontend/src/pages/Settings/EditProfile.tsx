@@ -12,12 +12,13 @@ interface ProfileFormData {
   city: string;
   country: string;
   about: string;
-  userName: string;
-  password: string;
+  username: string;
 }
 
 const EditProfile = () => {
-  const userId = localStorage.getItem('userId') || '';
+  const email = localStorage.getItem('userEmail') || ''; 
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState('');
 
   const [formData, setFormData] = useState<ProfileFormData>({
     name: '',
@@ -29,15 +30,14 @@ const EditProfile = () => {
     city: '',
     country: '',
     about: '',
-    userName: '',
-    password: ''
+    username: ''
   });
 
-  // 🔁 Fetch profile by user ID
+  // 🔁 Fetch user profile by email
   useEffect(() => {
-    if (!userId) return;
+    if (!email) return;
 
-    axios.get(`http://localhost:5000/api/auth/profile/${userId}`)
+    axios.get(`http://localhost:5000/api/profile/by-email/${email}`)
       .then((res) => {
         const profile = res.data;
         setFormData({
@@ -50,22 +50,37 @@ const EditProfile = () => {
           city: profile.city || '',
           country: profile.country || '',
           about: profile.about || '',
-          userName: profile.userName || '',
-          password: ''
+          username: profile.username || ''
         });
       })
       .catch((err) => {
         console.error('❌ Failed to fetch profile', err);
-      });
-  }, [userId]);
+      })
+      .finally(() => setLoading(false));
+  }, [email]);
 
+  // ✅ Update profile by email
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+
+    axios.put(`http://localhost:5000/api/profile/by-email/${email}`, formData)
+      .then(() => {
+        setMessage('✅ Profile updated successfully!');
+      })
+      .catch((err) => {
+        console.error('❌ Update failed', err);
+        setMessage('❌ Failed to update profile.');
+      });
   };
+
+  if (loading) {
+    return <div className="p-6 text-center text-gray-600">Loading profile...</div>;
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
+      {message && <div className="mb-4 text-blue-600">{message}</div>}
+
       <div className="flex items-center space-x-4 mb-8">
         <div className="relative">
           <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
@@ -86,7 +101,6 @@ const EditProfile = () => {
           { label: 'Your Name', name: 'name' },
           { label: 'User Name', name: 'userName' },
           { label: 'Email', name: 'email', type: 'email', disabled: true },
-          { label: 'Password', name: 'password', type: 'password' },
           { label: 'Date of Birth', name: 'dob', type: 'date' },
           { label: 'Present Address', name: 'presentAddress' },
           { label: 'Permanent Address', name: 'permanentAddress' },
