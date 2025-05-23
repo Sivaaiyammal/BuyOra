@@ -14,9 +14,9 @@ const UserAvatar = ({ imageUrl, size = 'md', alt = 'User avatar', onError }: Use
     lg: 'w-16 h-16'
   };
 
-  const DEFAULT_AVATAR = '/user-profile.avif';
+  const DEFAULT_AVATAR = '/1747901706239.png';
 
-  const [imgSrc, setImgSrc] = useState(imageUrl || DEFAULT_AVATAR);
+  const [imgSrc, setImgSrc] = useState(imageUrl);
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {

@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
+const fs = require('fs');
 const multer = require('multer');
 const Employee = require('../models/Employee'); 
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // folder to store profile pictures
+    cb(null, 'uploads/');
   },
   filename: function (req, file, cb) {
     const ext = path.extname(file.originalname);
@@ -46,8 +47,22 @@ router.put('/by-email/:email', upload.single('avatar'), async (req, res) => {
       role
     } = req.body;
 
-    // 🛠️ Update only editable fields
-    employee.name = name  || employee.name;
+    // ✅ Delete old avatar if new one uploaded
+    if (req.file && employee.avatar && !employee.avatar.startsWith('http')) {
+      const oldAvatarPath = path.join(__dirname, '..', employee.avatar);
+      if (fs.existsSync(oldAvatarPath)) {
+        fs.unlink(oldAvatarPath, (err) => {
+          if (err) {
+            console.error('Error deleting old avatar:', err.message);
+          } else {
+            console.log('Old avatar deleted:', oldAvatarPath);
+          }
+        });
+      }
+    }
+
+    // ✅ Update employee fields
+    employee.name = name || employee.name;
     employee.username = username || employee.username;
     employee.dob = dob || employee.dob;
     employee.phone = phone || employee.phone;

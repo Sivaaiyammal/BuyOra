@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Pencil } from 'lucide-react';
+import { useUser } from '../contexts/UserContext';
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('edit');
@@ -23,8 +24,8 @@ const Profile = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { setUser } = useUser();
 
-  // ✅ Fetch logged-in user profile
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -123,17 +124,27 @@ const Profile = () => {
         }
       });
 
-      alert('✅ ' + res.data.message);
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        alert('Failed to update profile: ' + (error.response?.data?.message || error.message));
-      } else {
-        alert('An unexpected error occurred.');
-      }
-    } finally {
-      setSaving(false);
+      alert(' ' + res.data.message);
+      // window.location.reload();
+    if (res.data.avatar) {
+      const updatedAvatar = res.data.avatar.startsWith("http")
+        ? res.data.avatar
+        : `http://localhost:5000${res.data.avatar}`;
+
+      const updatedUser = { ...formData, avatar: updatedAvatar };
+      setUser(updatedUser); 
+      localStorage.setItem("user", JSON.stringify(updatedUser)); 
     }
-  };
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      alert('Failed to update profile: ' + (error.response?.data?.message || error.message));
+    } else {
+      alert('An unexpected error occurred.');
+    }
+  } finally {
+    setSaving(false);
+  }
+};
 
   if (loading) {
     return (
