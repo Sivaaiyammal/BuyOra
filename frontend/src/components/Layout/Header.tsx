@@ -14,7 +14,7 @@ const DEFAULT_AVATAR = '/user-profile.avif';
 
 const Header = ({ collapsed, toggleSidebar }: HeaderProps) => {
   const navigate = useNavigate();
-  const { user } = useUser(); // ✅ get user from context
+  const { user } = useUser(); 
 
   const avatar =
     user?.avatar && typeof user.avatar === 'string' && user.avatar.trim() !== ''
