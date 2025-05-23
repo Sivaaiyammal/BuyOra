@@ -1,31 +1,45 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface UserAvatarProps {
   imageUrl: string;
   size?: 'sm' | 'md' | 'lg';
   alt?: string;
+  onError?: () => void;
 }
 
-const UserAvatar = ({ imageUrl, size = 'md', alt = 'User avatar' }: UserAvatarProps) => {
+const UserAvatar = ({ imageUrl, size = 'md', alt = 'User avatar', onError }: UserAvatarProps) => {
   const sizeClasses: Record<string, string> = {
     sm: 'w-8 h-8',
     md: 'w-10 h-10',
     lg: 'w-16 h-16'
   };
 
-  const [imgSrc, setImgSrc] = useState(imageUrl);
+  const DEFAULT_AVATAR = '/user-profile.avif';
+
+  const [imgSrc, setImgSrc] = useState(imageUrl || DEFAULT_AVATAR);
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    setImgSrc(imageUrl || DEFAULT_AVATAR);
+    setHasError(false); // reset error when imageUrl changes
+  }, [imageUrl]);
 
   const handleError = () => {
-    setImgSrc('/1747901706239.jpg');
+    if (!hasError) {
+      setImgSrc(DEFAULT_AVATAR);
+      setHasError(true);
+    }
+    if (onError) onError();
   };
 
   return (
     <div className={`${sizeClasses[size]} rounded-full overflow-hidden ring-2 ring-blue-100`}>
-      <img 
+      <img
         src={imgSrc}
         alt={alt}
         onError={handleError}
         className="w-full h-full object-cover"
+        draggable={false}
       />
     </div>
   );

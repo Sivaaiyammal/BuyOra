@@ -10,33 +10,52 @@ interface HeaderProps {
   toggleSidebar: () => void;
 }
 
+const DEFAULT_AVATAR = '/user-profile.avif'; 
+
 const Header = ({ collapsed, toggleSidebar }: HeaderProps) => {
   const navigate = useNavigate();
-  const [avatar, setAvatar] = useState("/1747901706239.jpg"); // fallback
+  const [avatar, setAvatar] = useState('');
+  const [avatarError, setAvatarError] = useState(false);
 
   useEffect(() => {
-  const userStr = localStorage.getItem("user");
-  if (userStr) {
-    const user = JSON.parse(userStr);
-    console.log("🧠 Avatar from localStorage:", user.avatar); // <-- Add this
-    if (user.avatar) {
-      const fullUrl = user.avatar.startsWith('http')
-        ? user.avatar
-        : `http://localhost:5000${user.avatar}`;
-      console.log("🌐 Final Avatar URL:", fullUrl); // <-- Add this
-      setAvatar(fullUrl);
+  const fetchAvatar = async () => {
+    const userStr = localStorage.getItem("user");
+
+    if (!userStr) {
+      setAvatar(DEFAULT_AVATAR);
+      return;
     }
-  }
+
+    try {
+      const user = JSON.parse(userStr);
+      const email = user.email;
+
+      if (!email) {
+        setAvatar(DEFAULT_AVATAR);
+        return;
+      }
+
+      const res = await fetch(`http://localhost:5000/api/profile/by-email/${email}`);
+      const data = await res.json();
+
+      if (data.avatar && typeof data.avatar === 'string' && data.avatar.trim() !== '') {
+        const fullUrl = data.avatar.startsWith("http")
+          ? data.avatar
+          : `http://localhost:5000${data.avatar}`;
+        setAvatar(fullUrl);
+      } else {
+        setAvatar(DEFAULT_AVATAR);
+      }
+
+    } catch (err) {
+      console.error("Failed to fetch avatar:", err);
+      setAvatar(DEFAULT_AVATAR);
+    }
+  };
+
+  fetchAvatar();
 }, []);
 
-
-    // Initial load
-  //   updateAvatar();
-
-  //   // Listen for profile update event (optional)
-  //   window.addEventListener("avatar-updated", updateAvatar);
-  //   return () => window.removeEventListener("avatar-updated", updateAvatar);
-  // }, []);
 
   return (
     <header className="bg-white border-b border-gray-200 py-3 px-4 flex items-center justify-between">
@@ -52,7 +71,7 @@ const Header = ({ collapsed, toggleSidebar }: HeaderProps) => {
           <span className="text-lg font-semibold text-gray-800">Welcome Back Admin...</span>
         </div>
       </div>
-      
+
       <div className="hidden md:flex items-center relative w-64 lg:w-96">
         <Search size={18} className="absolute left-3 text-gray-400" />
         <input
@@ -61,7 +80,7 @@ const Header = ({ collapsed, toggleSidebar }: HeaderProps) => {
           className="w-full py-2 pl-10 pr-4 text-sm bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
         />
       </div>
-      
+
       <div className="flex items-center space-x-4">
         <Notification />
         <button 
@@ -70,15 +89,23 @@ const Header = ({ collapsed, toggleSidebar }: HeaderProps) => {
         >
           <MessageSquare size={20} />
         </button>
-        <button 
-          onClick={() => navigate('/profile')}
-          className="focus:outline-none"
-        >
-          <UserAvatar 
-            imageUrl={avatar}
-            size="md"
-          />
-        </button>
+        {avatar && (
+          <button 
+            onClick={() => navigate('/profile')}
+            className="focus:outline-none"
+          >
+            <UserAvatar 
+              imageUrl={avatar}
+              size="md"
+              onError={() => {
+                if (!avatarError) {
+                  setAvatar(DEFAULT_AVATAR);
+                  setAvatarError(true);
+                }
+              }}
+            />
+          </button>
+        )}
       </div>
     </header>
   );
