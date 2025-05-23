@@ -23,6 +23,7 @@ const profileRoutes = require('./routes/profile');
 const productRoutes = require('./routes/productRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
+const brandRoutes = require('./routes/brandRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes); 
@@ -30,7 +31,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use('/api/categories', categoryRoutes);
-
+app.use('/api/brands', brandRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

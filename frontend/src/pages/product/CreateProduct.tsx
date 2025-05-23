@@ -2,21 +2,20 @@ import { useState, useEffect } from 'react';
 import { Box, Trash2,Pencil } from 'lucide-react';
 import axios from 'axios';
 import CreatableSelect from 'react-select/creatable';
-// import { components } from 'react-select';
 
 interface ProductFormData {
   name: string;
   brand: string;
-  gender: string;
+  itemcode: string;
   weight: string;
-  size: string[];
+  sizeStock: { size: string; stock: string }[];
   colors: string[];
   description: string;
   tax: string;
   gstNumber: string;
   price: string;
   discount: string;
-  stock: string;
+  // stock: string;
   images: string[];
   category: string;
 }
@@ -25,16 +24,16 @@ const CreateProduct = () => {
   const [formData, setFormData] = useState<ProductFormData>({
     name: '',
     brand: '',
-    gender: '',
+    itemcode: '',
     weight: '',
-    size: [],
+    sizeStock: [],
     colors: [],
     description: '',
     tax: '',
     gstNumber: '',
     price: '',
     discount: '',
-    stock: '',
+    // stock: '',
     images: [],
     category: ''
   });
@@ -42,29 +41,35 @@ const CreateProduct = () => {
   const [removedImages, setRemovedImages] = useState<string[]>([]);
   const [updatedImages, setUpdatedImages] = useState<string[]>([]);
   const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
+  const [brands, setBrands] = useState<{ value: string; label: string }[]>([]);
+
 
   const sizes = ['S', 'M', 'L', 'XL', '2XL'];
   const colors = ['#FFFFFF', '#FFB4B4', '#B4FFB4', '#FFE4B4', '#B4B4FF', '#B4FFFF', '#000000'];
 
-  useEffect(() => {
-    setUpdatedImages(formData.images);
-  }, [formData.images]);
-
-  useEffect(() => {
-  const fetchCategories = async () => {
+useEffect(() => {
+  const fetchCategoriesAndBrands = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/categories');
-      const formatted = res.data.map((cat: any) => ({
+      const [catRes, brandRes] = await Promise.all([
+        axios.get('http://localhost:5000/api/categories'),
+        axios.get('http://localhost:5000/api/brands')
+      ]);
+
+      setCategories(catRes.data.map((cat: any) => ({
         value: cat._id,
         label: cat.name
-      }));
-      setCategories(formatted);
+      })));
+
+      setBrands(brandRes.data.map((brand: any) => ({
+        value: brand._id,
+        label: brand.name
+      })));
     } catch (err) {
-      console.error('Failed to fetch categories:', err);
+      console.error('Failed to fetch categories or brands:', err);
     }
   };
 
-  fetchCategories();
+  fetchCategoriesAndBrands();
 }, []);
 
  const CustomOption = (props: any) => {
@@ -131,12 +136,29 @@ const CreateProduct = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSizeToggle = (size: string) => {
-    setFormData(prev => ({
+  const handleSizeStockToggle = (size: string) => {
+    setFormData((prev) => {
+      const exists = prev.sizeStock.find((s) => s.size === size);
+      if (exists) {
+        return {
+          ...prev,
+          sizeStock: prev.sizeStock.filter((s) => s.size !== size)
+        };
+      } else {
+        return {
+          ...prev,
+          sizeStock: [...prev.sizeStock, { size, stock: '' }]
+        };
+      }
+    });
+  };
+
+  const handleStockChangeForSize = (size: string, stock: string) => {
+    setFormData((prev) => ({
       ...prev,
-      size: prev.size.includes(size)
-        ? prev.size.filter(s => s !== size)
-        : [...prev.size, size]
+      sizeStock: prev.sizeStock.map((s) =>
+        s.size === size ? { ...s, stock } : s
+      )
     }));
   };
 
@@ -207,16 +229,16 @@ const CreateProduct = () => {
       setFormData({
         name: '',
         brand: '',
-        gender: '',
+        itemcode: '',
         weight: '',
-        size: [],
+        sizeStock: [],
         colors: [],
         description: '',
         tax: '',
         gstNumber: '',
         price: '',
         discount: '',
-        stock: '',
+        // stock: '',
         images: [],
         category: ''
       });
@@ -252,12 +274,12 @@ const CreateProduct = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Gender
+                    Item Code
                   </label>
                   <input
                     type="text"
-                    name="gender"
-                    value={formData.gender}
+                    name="itemcode"
+                    value={formData.itemcode}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
@@ -320,12 +342,38 @@ const CreateProduct = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Brand Name
                   </label>
-                  <input
-                    type="text"
-                    name="brand"
-                    value={formData.brand}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                   <CreatableSelect
+                    isClearable
+                    placeholder="Choose or create a brand"
+                    value={brands.find(brd => brd.value === formData.brand) || null}
+                    onChange={(selected) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        brand: selected ? selected.value : ''
+                      }));
+                    }}
+                    onCreateOption={async (inputValue) => {
+                      const slug = inputValue.toLowerCase().replace(/\s+/g, '-');
+                      try {
+                        const res = await axios.post('http://localhost:5000/api/brands/create', {
+                          name: inputValue,
+                          slug
+                        });
+                        const newBrand = {
+                          value: res.data._id,
+                          label: res.data.name
+                        };
+                        setBrands(prev => [...prev, newBrand]);
+                        setFormData(prev => ({ ...prev, product: newBrand.value }));
+                      } catch (err) {
+                        console.error('Failed to create brand:', err);
+                        alert('Failed to create brand.');
+                      }
+                    }}
+                    options={brands}
+                    components={{ Option: CustomOption }}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
                   />
                 </div>
 
@@ -334,20 +382,34 @@ const CreateProduct = () => {
                     Size
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {sizes.map(size => (
-                      <button
-                        key={size}
-                        type="button"
-                        onClick={() => handleSizeToggle(size)}
-                        className={`px-4 py-2 rounded-lg border ${
-                          formData.size.includes(size)
-                            ? 'bg-blue-500 text-white border-blue-500'
-                            : 'border-gray-300 hover:border-blue-500'
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
+                    {sizes.map((size) => {
+                        const active = formData.sizeStock.find((s) => s.size === size);
+                        return (
+                          <div key={size} className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleSizeStockToggle(size)}
+                              className={`px-4 py-2 rounded-lg border ${
+                                active
+                                  ? 'bg-blue-500 text-white border-blue-500'
+                                  : 'border-gray-300 hover:border-blue-500'
+                              }`}
+                            >
+                              {size}
+                            </button>
+                            {active && (
+                              <input
+                                type="text"
+                                placeholder="Stock"
+                                value={active.stock}
+                                onChange={(e) => handleStockChangeForSize(size, e.target.value)}
+                                className="w-20 px-2 py-1 border border-gray-300 rounded-lg"
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+
                   </div>
                 </div>
 
@@ -442,7 +504,7 @@ const CreateProduct = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Stock
                   </label>
@@ -453,7 +515,7 @@ const CreateProduct = () => {
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
-                </div>
+                </div> */}
               </div>
             </div>
 
