@@ -4,6 +4,7 @@ import UserAvatar from "../common/UserAvatar"
 import Logo from "./Logo"
 import Notification from "../common/Notification"
 import { useUser } from "../../contexts/UserContext"
+import "./header.css"
 
 const DEFAULT_AVATAR = "/user-profile.avif"
 
@@ -18,7 +19,7 @@ const Header = ({ collapsed, toggleSidebar }) => {
 
   return (
     <header className="bg-white border-b border-gray-200 py-3 px-4 flex items-center justify-between">
-      <div className="flex items-center gap-4">
+      <div className="user-controls flex items-center gap-4">
         <button
           onClick={toggleSidebar}
           className="text-gray-500 hover:text-gray-700 focus:outline-none"
@@ -42,7 +43,7 @@ const Header = ({ collapsed, toggleSidebar }) => {
         />
       </div>
 
-      <div className="flex items-center space-x-4">
+      <div className="user-controls flex items-center space-x-4">
         <Notification />
         <button
           onClick={() => navigate("/chat")}

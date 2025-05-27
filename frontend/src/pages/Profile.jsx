@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import axios from "axios"
 import { Pencil } from "lucide-react"
 import { useUser } from "../contexts/UserContext"
+import "./profile.css"
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("edit")
@@ -166,7 +167,7 @@ const Profile = () => {
     <div className="max-w-5xl mx-auto">
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="border-b border-gray-200">
-          <nav className="flex">
+          <nav className="user-controls flex">
             {["edit", "preferences", "security"].map(tab => (
               <button
                 key={tab}
@@ -195,7 +196,7 @@ const Profile = () => {
                           ? formData.avatar.startsWith("blob:")
                             ? formData.avatar
                             : `http://localhost:5000${formData.avatar}`
-                          : "https://via.placeholder.com/150"
+                          : "/user-profile.avif"
                       }
                       alt="Profile"
                       className="w-full h-full object-cover"
@@ -270,9 +271,9 @@ const Profile = () => {
               <button
                 type="submit"
                 disabled={saving}
-                className={`px-6 py-2 rounded-lg text-white transition-colors ${
+                className={`px-6 py-2 rounded-l bg-blue-500 text-white transition-colors ${
                   saving
-                    ? "bg-gray-400 cursor-not-allowed"
+                    ? "bg-blue-500 opacity-70 cursor-not-allowed"
                     : "bg-blue-500 hover:bg-blue-600"
                 }`}
               >

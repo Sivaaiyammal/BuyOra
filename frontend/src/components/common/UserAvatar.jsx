@@ -12,7 +12,7 @@ const UserAvatar = ({
     lg: "w-16 h-16"
   }
 
-  const DEFAULT_AVATAR = "/1747901706239.png"
+  const DEFAULT_AVATAR = "/user-profile.avif"
 
   const [imgSrc, setImgSrc] = useState(imageUrl)
   const [hasError, setHasError] = useState(false)

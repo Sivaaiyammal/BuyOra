@@ -1,0 +1,7 @@
+.user-controls button {
+  background-color: #ffffff !important;
+  border: 0px solid transparent !important;
+  padding: 6px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
