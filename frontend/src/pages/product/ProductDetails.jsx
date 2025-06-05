@@ -1,25 +1,43 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { HexColorPicker } from "react-colorful";
 import { Plus, Trash } from "lucide-react";
 
 export default function ProductDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
+  const [brands, setBrands] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [activeColor, setActiveColor] = useState(null);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [customColor, setCustomColor] = useState("#000000");
 
   useEffect(() => {
+    // Fetch brands and categories
+    const fetchData = async () => {
+      const [brandRes, catRes] = await Promise.all([
+        axios.get("http://localhost:5000/api/brands"),
+        axios.get("http://localhost:5000/api/categories"),
+      ]);
+      setBrands(brandRes.data);
+      setCategories(catRes.data);
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
     const fetchProduct = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/api/products/${id}`);
-        console.log("Fetched Product:", response.data); // Log the fetched product
+        // console.log("Fetched Product:", response.data); // Log the fetched product
         setProduct(response.data);
+        
         if (response.data?.colors?.length > 0) {
-          setActiveColor(response.data.colors[0]); // Set the first color as active by default
+          setActiveColor(response.data.colors[0]); 
         }
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -28,6 +46,15 @@ export default function ProductDetail() {
     
     fetchProduct();
   }, [id]);
+
+  const getBrandName = (brandId) => {
+    const match = brands.find((b) => String(b._id) === String(brandId));
+    return match ? match.name : "Unknown";
+  };
+  const getCategoryName = (catId) => {
+    const match = categories.find((c) => String(c._id) === String(catId));
+    return match ? match.name : "Unknown";
+  };
 
   const handleEdit = () => {
     if (isEditing) {
@@ -134,16 +161,22 @@ export default function ProductDetail() {
           <div>
             <label className="block text-gray-600 text-sm mb-1">Brand Name:</label>
             {isEditing ? (
-              <input
-                type="text"
-                value={product.brand}
-                onChange={e => handleInputChange("brand", e.target.value)}
-                className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-              />
-            ) : (
-              <div className="text-lg">{product.brand}</div>
-            )}
-          </div>
+                <select
+                  value={product.brand}
+                  onChange={e => handleInputChange("brand", e.target.value)}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select Brand</option>
+                  {brands.map(brand => (
+                    <option key={brand._id} value={brand._id}>
+                      {brand.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className="text-lg">{getBrandName(product.brand)}</div>
+              )}
+            </div>
 
           <div>
             <label className="block text-gray-600 text-sm mb-1">Price:</label>
@@ -163,14 +196,20 @@ export default function ProductDetail() {
             <div>
               <label className="block text-gray-600 text-sm mb-1">Category:</label>
               {isEditing ? (
-                <input
-                  type="text"
+                <select
                   value={product.category}
                   onChange={e => handleInputChange("category", e.target.value)}
                   className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                />
+                >
+                  <option value="">Select Category</option>
+                  {categories.map(category => (
+                    <option key={category._id} value={category._id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
               ) : (
-                <div className="text-gray-700">{product.category}</div>
+                <div className="text-gray-700">{getCategoryName(product.category)}</div>
               )}
             </div>
 
@@ -200,32 +239,33 @@ export default function ProductDetail() {
                   <>
                     {colors.length > 0 ? (
                       colors.map(color => (
-                        <div key={color} className="relative">
+                        <span key={color} className="color-badge-wrapper">
                           <button
-                            onClick={() => setActiveColor(color)}
-                            className={`w-8 h-8 rounded-full transition-transform hover:scale-110 ${
-                              activeColor === color ? "ring-2 ring-offset-2 ring-blue-500" : ""
-                            }`}
+                            type="button"
+                            className={`color-badge-circle${activeColor === color ? " active" : ""}`}
                             style={{ backgroundColor: color }}
+                            onClick={() => setActiveColor(color)}
                           />
-                          {/* Remove color button */}
                           <button
+                            type="button"
+                            className="color-badge-x"
+                            aria-label="Remove color"
                             onClick={() => removeColor(color)}
-                            className="absolute top-0 right-0 text-white bg-red-500 rounded-full text-xs p-1"
                           >
-                            <Trash size={12} />
+                            ×
                           </button>
-                        </div>
+                        </span>
                       ))
                     ) : (
                       <div>No colors available</div>
                     )}
-                    <button
-                      onClick={() => setShowColorPicker(!showColorPicker)}
-                      className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-300"
-                    >
-                      <Plus size={16} />
-                    </button>
+                 <button
+                    onClick={() => setShowColorPicker(!showColorPicker)}
+                    className="color-badge-circle bg-gray-500 text-white flex items-center justify-center text-2xl font-bold"
+                    aria-label="Add color"
+                  >
+                    +
+</button>
                   </>
                 ) : (
                   <div className="flex gap-2">
@@ -372,10 +412,48 @@ export default function ProductDetail() {
           </div>
         </div>
 
-        <div className="flex justify-end gap-4">
-          <button className="px-6 py-2 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors">
+        {/* <div className="flex justify-end gap-4">
+          <button className="px-6 py-2 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors" onClick={() => {
+            if (isEditing) {
+              if (window.history.length > 2) {
+                navigate(-1); 
+              } else {
+              navigate("/product/edit");
+              }
+            }else{
+              navigate("/product/edit");
+            }
+          }}>  
             Close
           </button>
+          <button
+            onClick={handleEdit}
+            className={`px-6 py-2 rounded-md transition-colors ${
+              isEditing
+                ? "bg-green-600 hover:bg-green-700 text-white"
+                : "bg-blue-600 hover:bg-blue-700 text-white"
+            }`}
+          >
+            {isEditing ? "Save Changes" : "Edit"}
+          </button>
+        </div> */}
+
+        <div className="flex justify-end gap-4">
+          {!isEditing ? (
+            <button
+              className="px-6 py-2 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors"
+              onClick={() => navigate(-1)}
+            >
+              Back
+            </button>
+          ) : (
+            <button
+              className="px-6 py-2 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors"
+               onClick={() => setIsEditing(false)}
+            >
+              Close
+            </button>
+          )}
           <button
             onClick={handleEdit}
             className={`px-6 py-2 rounded-md transition-colors ${
