@@ -11,7 +11,6 @@ const CreateProduct = () => {
     weight: "",
     sizeStock: [],
     colors: [],
-    description: "",
     tax: "",
     gstNumber: "",
     price: "",
@@ -24,9 +23,11 @@ const CreateProduct = () => {
   const [updatedImages, setUpdatedImages] = useState([])
   const [categories, setCategories] = useState([])
   const [brands, setBrands] = useState([])
+  const [selectedColors, setSelectedColors] = useState([]);
+
 
   const sizes = ["S", "M", "L", "XL", "2XL"]
-  const colors = [
+  const availableColors = [
     "#FFFFFF",
     "#FFB4B4",
     "#B4FFB4",
@@ -64,6 +65,15 @@ const CreateProduct = () => {
 
     fetchCategoriesAndBrands()
   }, [])
+
+
+  const toggleColor = (color) => {
+  setSelectedColors((prev) =>
+    prev.includes(color)
+      ? prev.filter((c) => c !== color)
+      : [...prev, color]
+  );
+};
 
   const CustomOption = props => {
     const { data, innerRef, innerProps } = props
@@ -224,6 +234,7 @@ const CreateProduct = () => {
 
     const payload = {
       ...formData,
+      colors: selectedColors,
       images: updatedImages,
       removedImages
     }
@@ -242,7 +253,7 @@ const CreateProduct = () => {
         itemcode: "",
         weight: "",
         sizeStock: [],
-        colors: [],
+        // colors: selectedColors,
         description: "",
         tax: "",
         gstNumber: "",
@@ -446,18 +457,18 @@ const CreateProduct = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Colors
                   </label>
-                  <div className="flex flex-wrap gap-2">
-                    {colors.map(color => (
-                      <button
+                  <div className="flex flex-wrap gap-3 mt-2">
+                    {availableColors.map((color) => (
+                      <div
                         key={color}
-                        type="button"
-                        onClick={() => handleColorToggle(color)}
-                        className={`w-8 h-8 rounded-full border-2 ${
-                          formData.colors.includes(color)
-                            ? "border-blue-500"
+                        onClick={() => toggleColor(color)}
+                        className={`w-8 h-8 rounded-full cursor-pointer border-2 transition ${
+                          selectedColors.includes(color)
+                            ? "ring-2 ring-blue-500 border-blue-500"
                             : "border-gray-300"
                         }`}
                         style={{ backgroundColor: color }}
+                        title={color}
                       />
                     ))}
                   </div>

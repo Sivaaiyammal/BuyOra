@@ -48,7 +48,7 @@ const Sidebar = ({ collapsed }) => {
     {
       icon: <ShoppingBag size={20} />,
       label: "Product",
-      path: "/product",
+      path: "/product/category",
       submenu: [
         { label: "Category", path: "/product/category" },
         { label: "New Product Create", path: "/product/create" },

@@ -1,58 +1,57 @@
-// import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, Download, Search, Calendar } from "lucide-react"
 import { useNavigate } from "react-router-dom"
+import axios from 'axios';
 
 const EditProduct = () => {
   const navigate = useNavigate()
-  const products = [
-    {
-      id: "#ID5030",
-      image:
-        "https://images.pexels.com/photos/297933/pexels-photo-297933.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      name: "Men's Oxford Shirt",
-      brand: "zara",
-      category: "Men Fashion",
-      size: "M,L,Xl",
-      price: 400,
-      originalPrice: 1799,
-      discount: 77,
-      stock: 18,
-      status: "Approved"
-    },
-    {
-      id: "#ID5002",
-      image:
-        "https://images.pexels.com/photos/1719641/pexels-photo-1719641.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      name: "Elegant Blue Blossom",
-      brand: "zara",
-      category: "Kids Fashion",
-      size: "1-3M",
-      price: 1800,
-      originalPrice: 2299,
-      discount: 60,
-      stock: 8,
-      status: "Approved"
-    },
-    {
-      id: "#ID5044",
-      image:
-        "https://images.pexels.com/photos/437037/pexels-photo-437037.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      name: "Fire-Boltt Phoenix Smart Watch",
-      brand: "Fire-Boltt",
-      category: "Electronics",
-      size: "",
-      price: 1099,
-      originalPrice: 1799,
-      discount: 77,
-      stock: 5,
-      status: "Approved"
-    }
-  ]
+  const [products, setProducts] = useState([]);
+  const [searchText, setSearchText] = useState('');
+  const [brands, setBrands] = useState([]);
+  const [categories, setCategories] = useState([]);
 
-  const handleRowClick = id => {
-    const cleanId = id.replace("#", "")
-    navigate(`/product/details/${cleanId}`)
-  }
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/api/products');
+        if (Array.isArray(res.data)) {
+          setProducts(res.data);
+          console.log("Fetched products from backend:", res.data);
+
+        } else {
+          console.error("Expected array but got:", res.data);
+        }
+      } catch (err) {
+        console.error("Error fetching products:", err);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+  axios.get('http://localhost:5000/api/brands').then(res => setBrands(res.data));
+  axios.get('http://localhost:5000/api/categories').then(res => setCategories(res.data));
+}, []);
+  
+  const handleRowClick = (id) => {
+    navigate(`/product/details/${id}`);
+  };
+
+  const filteredProducts = products.filter(product =>
+    product.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+    product.brand?.toLowerCase().includes(searchText.toLowerCase()) ||
+    product.category?.toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  const getBrandName = (brandId) => {
+    const match = brands.find(b => String(b._id) === String(brandId));
+    return match ? match.name : "Unknown";
+  };
+
+const getCategoryName = (categoryId) => {
+  const match = categories.find(c => String(c._id) === String(categoryId));
+  return match ? match.name : "Unknown";
+};
 
   return (
     <div className="bg-white rounded-lg shadow-sm">
@@ -67,6 +66,8 @@ const EditProduct = () => {
               <input
                 type="text"
                 placeholder="search text"
+                value={searchText}
+                onChange={e => setSearchText(e.target.value)}
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
               />
             </div>
@@ -102,33 +103,36 @@ const EditProduct = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {products.map(product => (
+              {filteredProducts.map(product => (
                 <tr
-                  key={product.id}
+                  key={product._id}
                   className="hover:bg-gray-50"
-                  onClick={() => handleRowClick(product.id)}
+                  onClick={() => handleRowClick(product._id)}
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {product.id}
+                    {/* {product._id?.slice(-6).toUpperCase()} */}
+                    <div className="text-sm text-gray-400">
+                      {product.itemcode || 'No Code'}
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center">
                       <img
-                        src={product.image}
+                        src={product.image || product.images?.[0] || 'https://via.placeholder.com/60'}
                         alt={product.name}
                         className="w-12 h-12 rounded-lg object-cover"
                       />
                       <div className="ml-4">
                         <div className="flex items-center">
                           <span className="font-medium text-gray-900">
-                            {product.brand}
+                              {getBrandName(product.brand)}
                           </span>
                         </div>
                         <div className="text-sm text-gray-500">
                           {product.name}
                         </div>
                         <div className="text-xs text-gray-400">
-                          {product.category}
+                          {getCategoryName(product.category)}
                         </div>
                         {product.size && (
                           <div className="text-xs text-gray-400">
@@ -152,7 +156,9 @@ const EditProduct = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <span className="text-sm text-gray-500">
-                        {product.stock} Item
+                        {Array.isArray(product.sizeStock)
+                          ? product.sizeStock.map(s => `${s.size}: ${s.stock}`).join(', ')
+                          : 'N/A'}
                       </span>
                       <button className="ml-2 text-gray-400 hover:text-gray-600">
                         <Eye size={16} />
@@ -176,6 +182,11 @@ const EditProduct = () => {
         </div>
 
         <div className="mt-6 flex items-center justify-between">
+          <div className="text-sm text-gray-700">
+            Showing {filteredProducts.length} Results
+          </div>
+        </div>
+        {/* <div className="mt-6 flex items-center justify-between">
           <div className="text-sm text-gray-700">Showing 3 Results</div>
           <div className="flex space-x-2">
             <button className="px-3 py-1 bg-orange-500 text-white rounded">
@@ -191,7 +202,7 @@ const EditProduct = () => {
               →
             </button>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   )

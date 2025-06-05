@@ -1,6 +1,17 @@
 {
 "css.lint.unknownAtRules": "ignore",
 "less.lint.unknownAtRules": "ignore",
-"scss.lint.unknownAtRules": "ignore"
+"scss.lint.unknownAtRules": "ignore",
+"a-file-icon-vscode.folderColor": "#607d8b",
+"a-file-icon-vscode.activeIconPacks": [
+    "rails",
+    "angular",
+    "react",
+    "phalcon"
+],
+"a-file-icon-vscode.arrowTheme": "material",
+"a-file-icon-vscode.folderTheme": "classic",
+"a-file-icon-vscode.opacity": 1,
+"a-file-icon-vscode.saturation": 1
 
 }

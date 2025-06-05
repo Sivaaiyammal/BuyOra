@@ -1,209 +1,393 @@
-import { useState } from "react"
-import { useParams } from "react-router-dom"
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { useParams } from "react-router-dom";
+import { HexColorPicker } from "react-colorful";
+import { Plus, Trash } from "lucide-react";
 
-const ProductDetails = () => {
-  const { id } = useParams()
-  console.log("Product ID:", id)
-  const [selectedColor, setSelectedColor] = useState("Blue")
-  const [quantities, setQuantities] = useState({})
+export default function ProductDetail() {
+  const { id } = useParams();
+  const [product, setProduct] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [activeColor, setActiveColor] = useState(null);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [customColor, setCustomColor] = useState("#000000");
 
-  const product = {
-    id: "#ID5002",
-    name: "Elegant Blue Blossom",
-    brand: "zara",
-    category: "Kids Fashion",
-    age: "1-3year",
-    weight: "500 G",
-    originalPrice: 2499,
-    offerPrice: 1800,
-    colors: ["Blue", "Red", "Green"],
-    sizes: [
-      { name: "S", label: "Small", stock: 2 },
-      { name: "M", label: "Medium", stock: 5 },
-      { name: "L", label: "Large", stock: 3 }
-    ],
-    images: [
-      "https://images.pexels.com/photos/1719641/pexels-photo-1719641.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      "https://images.pexels.com/photos/1719641/pexels-photo-1719641.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      "https://images.pexels.com/photos/1719641/pexels-photo-1719641.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-      "https://images.pexels.com/photos/1719641/pexels-photo-1719641.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-    ],
-    description: "Elegant Blue Blossom Party Dress with Jacket – For Girls",
-    careInstructions: ["Gentle Hand Wash Recommended", "Do Not Bleach"],
-    discount: {
-      text: "Get 10% Instant Discount on select Bank Debit Cards,",
-      details: "up to ₹400 on orders of ₹800 and above"
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/products/${id}`);
+        console.log("Fetched Product:", response.data); // Log the fetched product
+        setProduct(response.data);
+        if (response.data?.colors?.length > 0) {
+          setActiveColor(response.data.colors[0]); // Set the first color as active by default
+        }
+      } catch (error) {
+        console.error("Error fetching product:", error);
+      }
+    };
+    
+    fetchProduct();
+  }, [id]);
+
+  const handleEdit = () => {
+    if (isEditing) {
+      console.log("Saving changes:", product);
+      setShowColorPicker(false);
     }
-  }
+    setIsEditing(!isEditing);
+  };
 
-  const handleQuantityChange = (size, value) => {
-    setQuantities(prev => ({
-      ...prev,
-      [size]: Math.max(0, value)
-    }))
-  }
+  const handleInputChange = (field, value) => {
+    setProduct({ ...product, [field]: value });
+  };
 
-  const handleRequest = size => {
-    console.log(`Requested ${quantities[size]} items of size ${size}`)
-  }
+  const handleStockChange = (sizeName, newStock) => {
+    const newSizes = product?.sizeStock?.map(size =>
+      size.size === sizeName ? { ...size, stock: newStock } : size
+    );
+    setProduct({
+      ...product,
+      sizeStock: newSizes
+    });
+  };
+
+  const addCustomColor = () => {
+    if (product?.colors && !product.colors.includes(customColor)) {
+      const newColors = [...product.colors, customColor];
+      setProduct({
+        ...product,
+        colors: newColors
+      });
+      setActiveColor(customColor);
+    }
+    setShowColorPicker(false);
+  };
+
+  const removeColor = (color) => {
+    const updatedColors = product?.colors?.filter(c => c !== color);
+    setProduct({
+      ...product,
+      colors: updatedColors
+    });
+  };
+
+  const removeSize = (size) => {
+    const updatedSizes = product?.sizeStock?.filter(s => s.size !== size);
+    setProduct({
+      ...product,
+      sizeStock: updatedSizes
+    });
+  };
+
+  if (!product) return <div>Loading...</div>; // Handle loading state
+
+  // Safely access colors and sizeStock, provide fallback empty arrays
+  const colors = product?.colors || [];
+  const sizes = product?.sizeStock || [];
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div>
-          <img
-            src={product.images[0]}
-            alt={product.name}
-            className="w-full aspect-square object-cover rounded-lg"
-          />
-          <div className="grid grid-cols-4 gap-4 mt-4">
-            {product.images.map((image, index) => (
-              <img
+    <div className="bg-white rounded-lg shadow p-4 md:p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+        {/* Image Section */}
+        <div className="space-y-4">
+          <div className="aspect-square rounded-md overflow-hidden">
+            <img
+              src={product.images[0]}  // Display first image as the main image
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            {product.images?.map((thumb, index) => (
+              <div
                 key={index}
-                src={image}
-                alt={`${product.name} ${index + 1}`}
-                className="w-full aspect-square object-cover rounded-lg"
-              />
+                className="aspect-square border-2 border-gray-200 rounded-md overflow-hidden"
+              >
+                <img
+                  src={thumb}
+                  alt={`${product.name} thumbnail ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
             ))}
           </div>
         </div>
 
-        <div>
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">
-              ID: {product.id}
-            </h1>
-            <h2 className="text-xl font-semibold mt-2">
-              Product Name: {product.name}
-            </h2>
-            <p className="text-lg mt-2">Brand Name: {product.brand}</p>
-            <p className="text-gray-600 mt-2">
-              {product.category} {product.age}
-            </p>
-            <p className="text-gray-600">Item Weight: {product.weight}</p>
+        {/* Details Section */}
+        <div className="space-y-4">
+          <div className="text-gray-600">ID: {product.itemcode}</div>
+
+          <div>
+            <label className="block text-gray-600 text-sm mb-1">Product Name:</label>
+            {isEditing ? (
+              <input
+                type="text"
+                value={product.name}
+                onChange={e => handleInputChange("name", e.target.value)}
+                className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+              />
+            ) : (
+              <h1 className="text-xl md:text-2xl font-bold text-blue-800">{product.name}</h1>
+            )}
           </div>
 
-          <div className="mb-6">
-            <p className="text-lg text-gray-500 line-through">
-              Original Price: ₹{product.originalPrice}
-            </p>
-            <p className="text-2xl font-bold text-gray-900">
-              Offer Price: ₹{product.offerPrice} Only
-            </p>
+          <div>
+            <label className="block text-gray-600 text-sm mb-1">Brand Name:</label>
+            {isEditing ? (
+              <input
+                type="text"
+                value={product.brand}
+                onChange={e => handleInputChange("brand", e.target.value)}
+                className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+              />
+            ) : (
+              <div className="text-lg">{product.brand}</div>
+            )}
           </div>
 
-          <div className="mb-6">
-            <h3 className="text-lg font-medium mb-2">Stock Details</h3>
-            <div className="flex gap-2 mb-4">
-              {product.colors.map(color => (
-                <button
-                  key={color}
-                  onClick={() => setSelectedColor(color)}
-                  className={`px-4 py-2 rounded-lg ${
-                    selectedColor === color
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {color}
-                </button>
-              ))}
+          <div>
+            <label className="block text-gray-600 text-sm mb-1">Price:</label>
+            {isEditing ? (
+              <input
+                type="number"
+                value={product.price}
+                onChange={e => handleInputChange("price", e.target.value)}
+                className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+              />
+            ) : (
+              <div className="text-lg">${product.price}</div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-600 text-sm mb-1">Category:</label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={product.category}
+                  onChange={e => handleInputChange("category", e.target.value)}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                />
+              ) : (
+                <div className="text-gray-700">{product.category}</div>
+              )}
             </div>
 
-            <div className="space-y-4">
-              {product.sizes.map(size => (
-                <div
-                  key={size.name}
-                  className="flex items-center justify-between"
-                >
-                  <div className="w-24">
-                    <p className="font-medium">{size.name}</p>
-                    <p className="text-sm text-gray-500">{size.label}</p>
+            <div>
+              <label className="block text-gray-600 text-sm mb-1">Item Weight:</label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={product.weight}
+                  onChange={e => handleInputChange("weight", e.target.value)}
+                  className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                />
+              ) : (
+                <div className="text-gray-700">{product.weight}g</div>
+              )}
+            </div>
+          </div>
+
+          {/* Stock Details */}
+          <div className="border-t pt-4">
+            <h3 className="text-lg font-semibold mb-4">Stock Details</h3>
+
+            <div className="mb-6">
+              <label className="block text-gray-600 text-sm mb-2">Colors:</label>
+              <div className="flex flex-wrap gap-3 mb-4">
+                {isEditing ? (
+                  <>
+                    {colors.length > 0 ? (
+                      colors.map(color => (
+                        <div key={color} className="relative">
+                          <button
+                            onClick={() => setActiveColor(color)}
+                            className={`w-8 h-8 rounded-full transition-transform hover:scale-110 ${
+                              activeColor === color ? "ring-2 ring-offset-2 ring-blue-500" : ""
+                            }`}
+                            style={{ backgroundColor: color }}
+                          />
+                          {/* Remove color button */}
+                          <button
+                            onClick={() => removeColor(color)}
+                            className="absolute top-0 right-0 text-white bg-red-500 rounded-full text-xs p-1"
+                          >
+                            <Trash size={12} />
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <div>No colors available</div>
+                    )}
+                    <button
+                      onClick={() => setShowColorPicker(!showColorPicker)}
+                      className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-300"
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </>
+                ) : (
+                  <div className="flex gap-2">
+                    {colors.length > 0 ? (
+                      colors.map(color => (
+                        <div
+                          key={color}
+                          className="w-8 h-8 rounded-full"
+                          style={{ backgroundColor: color }}
+                        />
+                      ))
+                    ) : (
+                      <div>No colors available</div>
+                    )}
                   </div>
-                  <p className="text-sm text-gray-600">{size.stock} In Stock</p>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() =>
-                        handleQuantityChange(
-                          size.name,
-                          (quantities[size.name] || 0) - 1
-                        )
-                      }
-                      className="w-8 h-8 flex items-center justify-center border rounded-lg"
-                    >
-                      -
-                    </button>
-                    <input
-                      type="number"
-                      value={quantities[size.name] || 0}
-                      onChange={e =>
-                        handleQuantityChange(
-                          size.name,
-                          parseInt(e.target.value) || 0
-                        )
-                      }
-                      className="w-16 text-center border rounded-lg"
-                    />
-                    <button
-                      onClick={() =>
-                        handleQuantityChange(
-                          size.name,
-                          (quantities[size.name] || 0) + 1
-                        )
-                      }
-                      className="w-8 h-8 flex items-center justify-center border rounded-lg"
-                    >
-                      +
-                    </button>
-                    <button
-                      onClick={() => handleRequest(size.name)}
-                      className="px-4 py-2 text-blue-600 hover:text-blue-700 font-medium"
-                    >
-                      Request
-                    </button>
-                  </div>
+                )}
+              </div>
+
+              {isEditing && showColorPicker && (
+                <div className="mb-4">
+                  <HexColorPicker color={customColor} onChange={setCustomColor} />
+                  <button
+                    onClick={addCustomColor}
+                    className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    Add Color
+                  </button>
                 </div>
-              ))}
+              )}
             </div>
-          </div>
 
-          <div className="mb-6">
-            <h3 className="text-lg font-medium mb-2">Discount</h3>
-            <p className="text-gray-600">{product.discount.text}</p>
-            <p className="text-gray-600">{product.discount.details}</p>
-          </div>
+            {/* Sizes */}
+            <div className="space-y-4">
+              {["S", "M", "L", "XL", "2XL"].map(size => {
+                const sizeData = sizes.find(s => s.size === size);
+                return (
+                  <div key={size} className="grid grid-cols-3 md:grid-cols-4 items-center gap-4">
+                    <div>
+                      <div className="font-medium">{size}</div>
+                    </div>
 
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="text-lg font-medium mb-4">{product.description}</h3>
-            <p className="text-gray-600 mb-2">
-              Sky Blue Tailored Jacket, Floral Printed Dress, Comfort Meets
-              Style
-            </p>
-            <p className="text-gray-600 mb-4">
-              Perfect For: Special occasions, family celebrations, photo shoots,
-              or as a standout gift.
-            </p>
+                    <div>
+                      {isEditing ? (
+                        <input
+                          type="number"
+                          value={sizeData?.stock || 0}
+                          onChange={e => handleStockChange(size, parseInt(e.target.value))}
+                          className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <div>{sizeData?.stock || 0} In Stock</div>
+                      )}
+                    </div>
 
-            <h4 className="font-medium mb-2">Care Instructions:</h4>
-            <ul className="list-disc list-inside text-gray-600">
-              {product.careInstructions.map((instruction, index) => (
-                <li key={index}>{instruction}</li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="mt-6 flex space-x-4">
-            <button className="flex-1 px-6 py-3 bg-red-100 text-red-800 rounded-lg font-medium">
-              Reject
-            </button>
-            <button className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg font-medium">
-              Approve
-            </button>
+                    <div>
+                      <button
+                        onClick={() => removeSize(size)}
+                        className="text-red-600 hover:underline"
+                      >
+                        <Trash size={12} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  )
-}
 
-export default ProductDetails
+      <div className="mt-8 space-y-6">
+        <div>
+          <h2 className="text-xl font-semibold mb-4">{product.name} Party Dress with Jacket – For Girls</h2>
+
+          <div className="space-y-4">
+            {isEditing ? (
+              <textarea
+                value={product?.description || "No description available"} // Provide fallback text
+                onChange={e => handleInputChange("description", e.target.value)}
+                className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                rows={3}
+              />
+            ) : (
+              <p className="text-gray-700">{product?.description || "No description available"}</p>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-gray-50 p-4 rounded-md">
+          <h3 className="text-green-600 font-medium flex items-center mb-4">
+            <span className="mr-2">•</span> Care Instructions:
+          </h3>
+          <div className="space-y-2">
+            {product?.careInstructions?.map((instruction, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <div className="flex-1">
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={instruction}
+                      onChange={e => {
+                        const newInstructions = [
+                          ...product.careInstructions
+                        ];
+                        newInstructions[index] = e.target.value;
+                        setProduct({
+                          ...product,
+                          careInstructions: newInstructions
+                        });
+                      }}
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter care instruction"
+                    />
+                  ) : (
+                    <div className="text-gray-700">• {instruction}</div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <h3 className="text-xl font-semibold mb-2">Discount:</h3>
+          <div className="text-gray-700">
+            {isEditing ? (
+              <input
+                type="text"
+                value={product?.discount?.text || ''} // Provide fallback for undefined discount text
+                onChange={e => {
+                  setProduct({
+                    ...product,
+                    discount: {
+                      ...product.discount,
+                      text: e.target.value
+                    }
+                  });
+                }}
+                className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+              />
+            ) : (
+              <p>{product?.discount?.text || "No discount available"}</p> // Provide fallback for undefined discount text
+            )}
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-4">
+          <button className="px-6 py-2 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors">
+            Close
+          </button>
+          <button
+            onClick={handleEdit}
+            className={`px-6 py-2 rounded-md transition-colors ${
+              isEditing
+                ? "bg-green-600 hover:bg-green-700 text-white"
+                : "bg-blue-600 hover:bg-blue-700 text-white"
+            }`}
+          >
+            {isEditing ? "Save Changes" : "Edit"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
