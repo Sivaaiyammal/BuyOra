@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Eye, Download, Search, Calendar } from "lucide-react"
+import { Eye, Download, Search, Calendar, Trash2 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import axios from 'axios';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import namer from 'color-namer';
 
 const EditProduct = () => {
   const navigate = useNavigate()
@@ -9,6 +14,67 @@ const EditProduct = () => {
   const [searchText, setSearchText] = useState('');
   const [brands, setBrands] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [dateRange, setDateRange] = useState([null, null]);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [startDate, endDate] = dateRange;
+
+  const getColorName = (hex) => {
+  if (!hex) return "";
+  try {
+    const names = namer(hex);
+    return names.basic[0]?.name || hex;
+  } catch {
+    return hex;
+  }
+};
+
+ const handleDownload = () => {
+  const sizeLabels = ["S", "M", "L", "XL", "2XL"];
+  const dataToExport = filteredProducts.map(product => {
+    // Map sizeStock to an object: { S: 10, M: 5, ... }
+    const sizeMap = {};
+    if (Array.isArray(product.sizeStock)) {
+      product.sizeStock.forEach(s => {
+        sizeMap[s.size] = s.stock;
+      });
+    }
+
+    const colorNames = Array.isArray(product.colors)
+      ? product.colors.map(getColorName).join(", ")
+      : "";
+
+    return {
+      Name: product.name,
+      Brand: getBrandName(product.brand),
+      Category: getCategoryName(product.category),
+      Price: product.price,
+      Discount: product.discount,
+      Color: Array.isArray(product.colors) ? product.colors.join(", ") : "",
+      ...sizeLabels.reduce((acc, size) => {
+        acc[size] = sizeMap[size] || "";
+        return acc;
+      }, {})
+    };
+  });
+
+  const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Products");
+  const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+  const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+  saveAs(data, "products.xlsx");
+};
+
+const handleDelete = async (id) => {
+  if (window.confirm("Are you sure you want to delete this product?")) {
+    try {
+      await axios.delete(`http://localhost:5000/api/products/${id}`);
+      setProducts(products.filter(p => p._id !== id));
+    } catch (err) {
+      alert("Failed to delete product.");
+    }
+  }
+};
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -37,11 +103,6 @@ const EditProduct = () => {
     navigate(`/product/details/${id}`);
   };
 
-  const filteredProducts = products.filter(product =>
-    product.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-    product.brand?.toLowerCase().includes(searchText.toLowerCase()) ||
-    product.category?.toLowerCase().includes(searchText.toLowerCase())
-  );
 
   const getBrandName = (brandId) => {
     const match = brands.find(b => String(b._id) === String(brandId));
@@ -52,6 +113,29 @@ const getCategoryName = (categoryId) => {
   const match = categories.find(c => String(c._id) === String(categoryId));
   return match ? match.name : "Unknown";
 };
+
+const filteredProducts = products.filter(product => {
+  const productName = product.name ? product.name.toLowerCase() : "";
+  const brandName = getBrandName(product.brand) ? getBrandName(product.brand).toLowerCase() : "";
+  const search = searchText.toLowerCase();
+
+  const matchesSearch = !search
+    || productName.includes(search)
+    || brandName.includes(search);
+
+  if (startDate && endDate && product.createdAt) {
+    const created = new Date(product.createdAt);
+    const createdDay = new Date(created.getFullYear(), created.getMonth(), created.getDate());
+    const startDay = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    const endDay = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+    return (
+      matchesSearch &&
+      createdDay >= startDay &&
+      createdDay <= endDay
+    );
+  }
+  return matchesSearch;
+});
 
   return (
     <div className="bg-white rounded-lg shadow-sm">
@@ -71,12 +155,30 @@ const getCategoryName = (categoryId) => {
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
               />
             </div>
-            <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+            <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50" onClick={() => setShowCalendar(!showCalendar)}>
               <Calendar size={16} />
-              <span>Select Dates</span>
+              <span>
+                {startDate && endDate
+                  ? `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`
+                  : "Select Dates"}
+              </span>
             </button>
+            {showCalendar && (
+              <div className="absolute z-50 mt-2">
+                <DatePicker
+                  selected={startDate}
+                  onChange={(update) => setDateRange(update)}
+                  startDate={startDate}
+                  endDate={endDate}
+                  selectsRange
+                  inline
+                  onClickOutside={() => setShowCalendar(false)}
+                  className="bg-white border border-gray-300 rounded-lg shadow-lg p-4"
+                />
+              </div>
+            )}
           </div>
-          <button className="p-2 text-gray-500 hover:text-gray-700">
+          <button className="p-2 text-gray-500 hover:text-gray-700" onClick={handleDownload}>
             <Download size={20} />
           </button>
         </div>
@@ -107,7 +209,6 @@ const getCategoryName = (categoryId) => {
                 <tr
                   key={product._id}
                   className="hover:bg-gray-50"
-                  onClick={() => handleRowClick(product._id)}
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {/* {product._id?.slice(-6).toUpperCase()} */}
@@ -160,19 +261,31 @@ const getCategoryName = (categoryId) => {
                           ? product.sizeStock.map(s => `${s.size}: ${s.stock}`).join(', ')
                           : 'N/A'}
                       </span>
-                      <button className="ml-2 text-gray-400 hover:text-gray-600">
+                      {/* <button className="ml-2 text-gray-400 hover:text-gray-600">
                         <Eye size={16} />
-                      </button>
+                      </button> */}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex space-x-2">
-                      <button className="px-3 py-1 bg-green-100 text-green-800 rounded-md text-xs font-medium">
-                        Approved
-                      </button>
-                      <button className="px-3 py-1 bg-red-100 text-red-800 rounded-md text-xs font-medium">
-                        reject
-                      </button>
+                      <button
+                          className="px-3 py-1 bg-blue-100 text-blue-800 rounded-md text-xs font-medium flex items-center"
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleRowClick(product._id);
+                          }}
+                        >
+                          <Eye size={16} className="mr-1" /> View
+                        </button>
+                        <button
+                          className="px-3 py-1 bg-red-100 text-red-800 rounded-md text-xs font-medium flex items-center"
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleDelete(product._id);
+                          }}
+                        >
+                          <Trash2 size={16} className="mr-1" /> Delete
+                        </button>
                     </div>
                   </td>
                 </tr>
