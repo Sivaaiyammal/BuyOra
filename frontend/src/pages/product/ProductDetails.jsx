@@ -56,13 +56,21 @@ export default function ProductDetail() {
     return match ? match.name : "Unknown";
   };
 
-  const handleEdit = () => {
-    if (isEditing) {
-      console.log("Saving changes:", product);
+  const handleEdit = async () => {
+  if (isEditing) {
+    try {
+      console.log("PUT URL:", `http://localhost:5000/api/products/${product._id}`);
+      console.log("Sending product:", product);
+      await axios.put(`http://localhost:5000/api/products/${product._id}`, product);
       setShowColorPicker(false);
+    } catch (error) {
+      console.error("Error updating product:", error);
+      alert("Failed to update product.");
+      return;
     }
-    setIsEditing(!isEditing);
-  };
+  }
+  setIsEditing(!isEditing);
+};
 
   const handleInputChange = (field, value) => {
     setProduct({ ...product, [field]: value });
@@ -298,35 +306,75 @@ export default function ProductDetail() {
             </div>
 
             {/* Sizes */}
-            <div className="space-y-4">
-              {sizes.map(sizeData => (
-              <div key={sizeData.size} className="grid grid-cols-3 md:grid-cols-4 items-center gap-4">
-                <div>
-                  <div className="font-medium">{sizeData.size}</div>
+            <div className="mb-6">
+              <label className="block text-gray-600 text-sm mb-2">Sizes:</label>
+              {isEditing ? (
+                <div className="flex flex-wrap gap-2">
+                  {["S", "M", "L", "XL", "2XL"].map(size => {
+                    const active = sizes.find(s => s.size === size);
+                    return (
+                      <div key={size} className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (active) {
+                              // Remove size
+                              setProduct({
+                                ...product,
+                                sizeStock: sizes.filter(s => s.size !== size)
+                              });
+                            } else {
+                              // Add size with default stock 0
+                              setProduct({
+                                ...product,
+                                sizeStock: [...sizes, { size, stock: 0 }]
+                              });
+                            }
+                          }}
+                          className={`px-4 py-2 rounded-lg border ${
+                            active
+                              ? "bg-blue-500 text-white border-blue-500"
+                              : "border-gray-300 hover:border-blue-500"
+                          }`}
+                        >
+                          {size}
+                        </button>
+                        {active && (
+                          <input
+                            type="number"
+                            min={0}
+                            placeholder="Stock"
+                            value={active.stock}
+                            onChange={e => {
+                              const newStock = parseInt(e.target.value) || 0;
+                              setProduct({
+                                ...product,
+                                sizeStock: sizes.map(s =>
+                                  s.size === size ? { ...s, stock: newStock } : s
+                                )
+                              });
+                            }}
+                            className="w-20 px-2 py-1 border border-gray-300 rounded-lg"
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-
-              <div>
-                {isEditing ? (
-                  <input
-                    type="number"
-                    value={sizeData?.stock || 0}
-                    onChange={e => handleStockChange(sizeData.size, parseInt(e.target.value))}
-                    className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                  />
-                ) : (
-                  <div>{sizeData?.stock || 0} In Stock</div>
-                )}
-              </div>
-              <div>
-                <button
-                  onClick={() => removeSize(sizeData.size)}
-                  className="text-red-600 hover:underline"
-                >
-                  <Trash size={12} />
-                </button>
-              </div>
-            </div>
-          ))}
+              ) : (
+                <div className="space-y-2">
+                  {sizes.length > 0 ? (
+                    sizes.map(sizeData => (
+                      <div key={sizeData.size} className="flex items-center gap-4">
+                        <div className="font-medium">{sizeData.size}</div>
+                        <div>{sizeData.stock} In Stock</div>
+                      </div>
+                    ))
+                  ) : (
+                    <div>No sizes available</div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
