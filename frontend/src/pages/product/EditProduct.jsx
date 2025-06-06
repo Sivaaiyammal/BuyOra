@@ -254,16 +254,23 @@ const filteredProducts = products.filter(product => {
                       ₹{product.originalPrice}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap align-top">
                     <div className="flex items-center">
-                      <span className="text-sm text-gray-500">
-                        {Array.isArray(product.sizeStock)
-                          ? product.sizeStock.map(s => `${s.size}: ${s.stock}`).join(', ')
-                          : 'N/A'}
-                      </span>
-                      {/* <button className="ml-2 text-gray-400 hover:text-gray-600">
-                        <Eye size={16} />
-                      </button> */}
+                      {Array.isArray(product.sizeStock) && product.sizeStock.length > 0 ? (
+                        <table className="text-sm text-gray-500">
+                          <tbody>
+                            {product.sizeStock.map(s => (
+                              <tr key={s.size}>
+                                <td className="pr-2">{s.size}</td>
+                                <td>:</td>
+                                <td className="pl-2">{s.stock}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <span className="text-sm text-gray-500">N/A</span>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -299,23 +306,6 @@ const filteredProducts = products.filter(product => {
             Showing {filteredProducts.length} Results
           </div>
         </div>
-        {/* <div className="mt-6 flex items-center justify-between">
-          <div className="text-sm text-gray-700">Showing 3 Results</div>
-          <div className="flex space-x-2">
-            <button className="px-3 py-1 bg-orange-500 text-white rounded">
-              1
-            </button>
-            <button className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
-              2
-            </button>
-            <button className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
-              3
-            </button>
-            <button className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
-              →
-            </button>
-          </div>
-        </div> */}
       </div>
     </div>
   )

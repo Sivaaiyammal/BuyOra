@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Pencil, Trash2, X } from "lucide-react"
 import axios from "axios"
 
 const AdminManager = () => {
+  const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false)
   const [editId, setEditId] = useState(null)
   const [formData, setFormData] = useState({
@@ -13,6 +15,14 @@ const AdminManager = () => {
     phone: ""
   })
   const [admins, setAdmins] = useState([])
+  const [notAdmin, setNotAdmin] = useState(false);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user || user.email !== "admin@buyora.com") {
+      setNotAdmin(true);
+    }
+  }, []);
 
   const fetchAdmins = async () => {
     try {
@@ -88,6 +98,17 @@ const AdminManager = () => {
       console.error("Failed to delete admin", err)
       alert("Failed to delete")
     }
+  }
+
+  if (notAdmin) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="bg-white p-8 rounded shadow text-center">
+          <h2 className="text-xl font-bold mb-2 text-red-600">Access Denied</h2>
+          <p className="text-gray-700">Only admin can access this page.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
