@@ -265,7 +265,7 @@ export default function ProductDetail() {
                     aria-label="Add color"
                   >
                     +
-</button>
+                </button>
                   </>
                 ) : (
                   <div className="flex gap-2">
@@ -299,38 +299,34 @@ export default function ProductDetail() {
 
             {/* Sizes */}
             <div className="space-y-4">
-              {["S", "M", "L", "XL", "2XL"].map(size => {
-                const sizeData = sizes.find(s => s.size === size);
-                return (
-                  <div key={size} className="grid grid-cols-3 md:grid-cols-4 items-center gap-4">
-                    <div>
-                      <div className="font-medium">{size}</div>
-                    </div>
+              {sizes.map(sizeData => (
+              <div key={sizeData.size} className="grid grid-cols-3 md:grid-cols-4 items-center gap-4">
+                <div>
+                  <div className="font-medium">{sizeData.size}</div>
+                </div>
 
-                    <div>
-                      {isEditing ? (
-                        <input
-                          type="number"
-                          value={sizeData?.stock || 0}
-                          onChange={e => handleStockChange(size, parseInt(e.target.value))}
-                          className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-                        />
-                      ) : (
-                        <div>{sizeData?.stock || 0} In Stock</div>
-                      )}
-                    </div>
-
-                    <div>
-                      <button
-                        onClick={() => removeSize(size)}
-                        className="text-red-600 hover:underline"
-                      >
-                        <Trash size={12} />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+              <div>
+                {isEditing ? (
+                  <input
+                    type="number"
+                    value={sizeData?.stock || 0}
+                    onChange={e => handleStockChange(sizeData.size, parseInt(e.target.value))}
+                    className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <div>{sizeData?.stock || 0} In Stock</div>
+                )}
+              </div>
+              <div>
+                <button
+                  onClick={() => removeSize(sizeData.size)}
+                  className="text-red-600 hover:underline"
+                >
+                  <Trash size={12} />
+                </button>
+              </div>
+            </div>
+          ))}
             </div>
           </div>
         </div>
@@ -411,32 +407,6 @@ export default function ProductDetail() {
             )}
           </div>
         </div>
-
-        {/* <div className="flex justify-end gap-4">
-          <button className="px-6 py-2 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors" onClick={() => {
-            if (isEditing) {
-              if (window.history.length > 2) {
-                navigate(-1); 
-              } else {
-              navigate("/product/edit");
-              }
-            }else{
-              navigate("/product/edit");
-            }
-          }}>  
-            Close
-          </button>
-          <button
-            onClick={handleEdit}
-            className={`px-6 py-2 rounded-md transition-colors ${
-              isEditing
-                ? "bg-green-600 hover:bg-green-700 text-white"
-                : "bg-blue-600 hover:bg-blue-700 text-white"
-            }`}
-          >
-            {isEditing ? "Save Changes" : "Edit"}
-          </button>
-        </div> */}
 
         <div className="flex justify-end gap-4">
           {!isEditing ? (
