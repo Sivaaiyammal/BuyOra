@@ -1,64 +1,86 @@
-import React from "react"
+import React, { useEffect, useState } from "react";
+import { PolarArea } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  RadialLinearScale,
+  ArcElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import ChartDataLabels from "chartjs-plugin-datalabels";
+import axios from "axios";
+
+ChartJS.register(RadialLinearScale, ArcElement, Tooltip, Legend, ChartDataLabels);
+
+const CATEGORY_COLORS = [
+  "#fbbf24", // electrical - orange
+  "#22c55e", // Men fashion - green
+  "#3b82f6", // Kids fashion - blue
+  "#f472b6", // women fashion - pink
+];
 
 const ProductChart = () => {
+  const [labels, setLabels] = useState([]);
+  const [counts, setCounts] = useState([]);
+  const [categoryCounts, setCategoryCounts] = useState([]);
+
+  useEffect(() => {
+    axios.get("http://localhost:5000/api/product-charts/category-counts")
+      .then(res => {
+        setLabels(res.data.map(item => item.category));
+        setCounts(res.data.map(item => item.count));
+      });
+  }, []);
+  
+
+  const data = {
+    labels,
+    datasets: [
+      {
+        label: "Product Categories",
+        data: counts,
+        backgroundColor: CATEGORY_COLORS.slice(0, labels.length),
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const options = {
+    plugins: {
+      legend: {
+        position: "bottom",
+        labels: {
+          color: "#374151",
+          font: { size: 14 },
+        },
+      },
+      datalabels: {
+        color: "#222",
+        font: { weight: "bold", size: 14 },
+        formatter: (value, context) => context.chart.data.labels[context.dataIndex],
+      },
+    },
+    scales: {
+      r: {
+        ticks: { color: "#6b7280", font: { size: 12 } },
+        grid: { color: "#e5e7eb" },
+        angleLines: { color: "#e5e7eb" },
+      },
+    },
+    responsive: true,
+    maintainAspectRatio: false,
+  };
+
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm">
       <h3 className="text-lg font-medium text-gray-800 mb-4">Product</h3>
-
-      <div className="flex justify-center mb-6">
-        <div className="relative w-40 h-40">
-          <svg width="160" height="160" viewBox="0 0 160 160">
-            {/* Blue slice (Kids fashion) - 25% */}
-            <path d="M80 80 L80 0 A80 80 0 0 1 160 80 Z" fill="#3b82f6" />
-
-            {/* Green slice (Men fashion) - 25% */}
-            <path d="M80 80 L160 80 A80 80 0 0 1 80 160 Z" fill="#10b981" />
-
-            {/* Pink slice (Women fashion) - 15% */}
-            <path d="M80 80 L80 160 A80 80 0 0 1 32 128 Z" fill="#ec4899" />
-
-            {/* Yellow slice (Electrical) - 35% */}
-            <path d="M80 80 L32 128 A80 80 0 0 1 80 0 Z" fill="#f59e0b" />
-
-            {/* Center white circle with percentage */}
-            <circle cx="80" cy="80" r="40" fill="white" />
-            <text
-              x="80"
-              y="85"
-              textAnchor="middle"
-              fontSize="18"
-              fontWeight="bold"
-              fill="#374151"
-            >
-              50%
-            </text>
-          </svg>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2">
-        <div className="flex items-center">
-          <span className="w-3 h-3 rounded-full bg-amber-500 mr-2"></span>
-          <span className="text-sm text-gray-600">electrical</span>
-        </div>
-
-        <div className="flex items-center">
-          <span className="w-3 h-3 rounded-full bg-green-500 mr-2"></span>
-          <span className="text-sm text-gray-600">Men fashion</span>
-        </div>
-
-        <div className="flex items-center">
-          <span className="w-3 h-3 rounded-full bg-blue-500 mr-2"></span>
-          <span className="text-sm text-gray-600">Kids fashion</span>
-        </div>
-
-        <div className="flex items-center">
-          <span className="w-3 h-3 rounded-full bg-pink-500 mr-2"></span>
-          <span className="text-sm text-gray-600">women fashion</span>
+      <div className="flex justify-center mb-6" style={{ height: 260 }}>
+        <div className="relative w-64 h-64">
+          <PolarArea data={data} options={options} />
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProductChart
+export default ProductChart;
