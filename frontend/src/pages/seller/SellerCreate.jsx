@@ -39,16 +39,45 @@ const SellerCreate = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post("http://localhost:5000/api/sellers", formData);
-      alert("Seller added successfully!");
-      console.log(response.data);
-    } catch (err) {
-      console.error("Failed to add seller:", err);
-      alert("Failed to add seller.");
-    }
-  };
+  e.preventDefault();
+  try {
+    const response = await axios.post("http://localhost:5000/api/sellers", formData);
+    alert("Seller added successfully!");
+    console.log(response.data);
+
+    // Reset the form to its initial state
+    setFormData({
+      sellerId: "",
+      sellerName: "",
+      brandName: "",
+      email: "",
+      mobileNumber: "",
+      identityVerification: "",
+      gstNumber: "",
+      website: "",
+      address: "",
+      pinCode: "",
+      bankName: "",
+      accountNumber: "",
+      ifscCode: "",
+      productCategories: "",
+    });
+
+    // Optionally, refetch the next sellerId
+    const fetchSellerId = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/sellers/next-id");
+        setFormData((prev) => ({ ...prev, sellerId: response.data.sellerId }));
+      } catch (err) {
+        console.error("Failed to fetch seller ID:", err);
+      }
+    };
+    fetchSellerId();
+  } catch (err) {
+    console.error("Failed to add seller:", err);
+    alert("Failed to add seller.");
+  }
+};
 
   return (
     <div className="bg-white rounded-lg shadow">

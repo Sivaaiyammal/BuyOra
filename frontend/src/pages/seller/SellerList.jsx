@@ -20,12 +20,73 @@ const SellerList = () => {
     fetchSellers();
   }, []);
 
+  // Format date to "10 June 2025"
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const monthName = date.toLocaleString("default", { month: "long" });
+    const year = date.getFullYear();
+    return `${day} ${monthName} ${year}`;
+  };
+
   // Filter sellers based on search text and status
   const filteredSellers = sellers.filter((seller) => {
     const matchesSearch = seller.name.toLowerCase().includes(searchText.toLowerCase());
     const matchesStatus = filterStatus ? seller.status === filterStatus : true;
     return matchesSearch && matchesStatus;
   });
+
+  const exportReport = () => {
+  const headers = [
+    "Seller ID",
+    "Seller Name",
+    "Brand Name",
+    "E-mail ID",
+    "Mobile Number",
+    "Identity Verification",
+    "GST Number",
+    "Website",
+    "Address",
+    "Pin Code",
+    "Bank Name",
+    "Account Number",
+    "IFSC Code",
+    "Product Categories",
+    "Status",
+    "Created Date",
+  ];
+
+  const rows = filteredSellers.map((seller) => [
+    seller.sellerId,
+    seller.sellerName,
+    seller.brandName,
+    seller.email,
+    seller.mobileNumber,
+    seller.identityVerification,
+    seller.gstNumber,
+    seller.website || "N/A", // Handle empty fields
+    seller.address,
+    seller.pinCode,
+    seller.bankName,
+    seller.accountNumber,
+    seller.ifscCode,
+    `"${seller.productCategories}"`, // Wrap productCategories in double quotes
+    seller.status,
+    formatDate(seller.createdAt), // Format date for export
+  ]);
+
+  const csvContent =
+    "data:text/csv;charset=utf-8," +
+    [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "seller_report.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
   return (
     <div className="bg-white rounded-lg shadow">
@@ -52,7 +113,7 @@ const SellerList = () => {
               <option value="Pending">Pending</option>
               <option value="Rejected">Rejected</option>
             </select>
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onClick={exportReport}>
               Export Report
             </button>
           </div>
@@ -120,7 +181,7 @@ const SellerList = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {seller.createdAt}
+                    {formatDate(seller.createdAt)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 hover:text-blue-800">
                     <button>Send message</button>
