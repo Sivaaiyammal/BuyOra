@@ -41,8 +41,8 @@ const Sidebar = ({ collapsed }) => {
       label: "Seller",
       path: "/seller",
       submenu: [
-        { label: "Create", path: "/seller?view=create" },
-        { label: "Seller List", path: "/seller?view=list" }
+        { label: "Create", path: "/seller/create" },
+        { label: "Seller List", path: "/seller/list" }
       ]
     },
     {

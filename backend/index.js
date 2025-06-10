@@ -39,6 +39,7 @@ const brandRoutes = require('./routes/brandRoutes');
 const productChartRoutes = require('./routes/productChartRoutes');
 const userRoutes = require('./routes/userRoutes');
 const messageRoutes = require('./routes/messageRoutes');
+const sellerRoutes = require('./routes/sellerRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes); 
@@ -50,6 +51,7 @@ app.use('/api/brands', brandRoutes);
 app.use('/api/product-charts', productChartRoutes);
 app.use('/api/employees', userRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/sellers', sellerRoutes);
 
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);

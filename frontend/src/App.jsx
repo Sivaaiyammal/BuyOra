@@ -8,6 +8,8 @@ import Orders from "./pages/Orders"
 import Profile from "./pages/Profile"
 import Chat from "./pages/Chat"
 import Seller from "./pages/seller/Seller"
+import SellerCreate from "./pages/seller/SellerCreate"
+import SellerList from "./pages/seller/SellerList"
 import Product from "./pages/product/Product"
 import Category from "./pages/product/Category"
 import CreateProduct from "./pages/product/CreateProduct"
@@ -138,6 +140,18 @@ function App() {
               path="/seller"
               element={
                 <ProtectedRoute>{renderWithLayout(<Seller />)}</ProtectedRoute>
+              }
+            />
+            <Route
+              path="/seller/create"
+              element={
+                <ProtectedRoute>{renderWithLayout(<SellerCreate />)}</ProtectedRoute>
+              }
+            />
+            <Route
+              path="/seller/list"
+              element={
+                <ProtectedRoute>{renderWithLayout(<SellerList />)}</ProtectedRoute>
               }
             />
             <Route
