@@ -54,4 +54,39 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/:id', async (req, res) => {
+  try {
+    const seller = await Seller.findOne({ sellerId: req.params.id }).populate("productCategories", "name");
+    if (!seller) return res.status(404).json({ message: "Seller not found" });
+    res.json(seller);
+  } catch (error) {
+    console.error('Failed to fetch seller by ID:', error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.put('/:id/status', async (req, res) => {
+  try {
+    const { status, reason } = req.body;
+
+    const update = { status };
+    if (status === "Rejected" && reason) {
+      update.rejectionReason = reason;
+    }
+
+    const seller = await Seller.findOneAndUpdate(
+      { sellerId: req.params.id },
+      update,
+      { new: true }
+    );
+
+    if (!seller) return res.status(404).json({ message: "Seller not found" });
+    res.json({ message: "Status updated", seller });
+  } catch (err) {
+    console.error("Status update failed:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 module.exports = router;

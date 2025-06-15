@@ -2,7 +2,7 @@
 // import { useEffect } from "react"
 import React, { useState, useEffect, useRef } from "react"
 import axios from "axios"
-import { Pencil, CheckCircle } from "lucide-react"
+import { Pencil, CheckCircle, CompassIcon } from "lucide-react"
 import CreatableSelect from "react-select/creatable";
 import { ArrowLeft, Upload, Edit, Trash2, Eye } from "lucide-react"
 import { Button } from "../../components/ui/button"
@@ -12,6 +12,7 @@ import { Label } from "../../components/ui/label"
 const AddSellerForm = () => {
   const [formData, setFormData] = useState({
     sellerName: "",
+    companyName: "",
     email: "",
     brandName: "",
     mobileNumber: "",
@@ -155,6 +156,7 @@ const AddSellerForm = () => {
       setFormData({
         sellerId: "",
         sellerName: "",
+        companyName: "",
         brandName: "",
         email: "",
         mobileNumber: "",
@@ -265,9 +267,10 @@ const AddSellerForm = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {[
               { label: "Seller Name", name: "sellerName" },
+              { label: "Company Name", name: "companyName" },
               { label: "Brand Name", name: "brandName" },
               { label: "E-Mail ID", name: "email", type: "email" },
-              { label: "Mobile Number", name: "mobileNumber", type: "tel" },
+              // { label: "Mobile Number", name: "mobileNumber", type: "tel" },
             ].map((field) => (
               <div key={field.name}>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}<span className="text-red-500">*</span></label>
@@ -285,23 +288,42 @@ const AddSellerForm = () => {
             ))}
         </div>
 
+        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
             <label
               className="text-sm font-medium text-gray-700 mb-2 block"
             >
-              Identity Verification
+              Mobile Number<span className="text-red-500">*</span>
             </label>
             
             <input
-              id="identityVerification"
-              name="identityVerification"
+              id="mobileNumber"
+              name="mobileNumber"
               
-              placeholder="Government ID (Aadhaar, PAN, Passport)"
-              value={formData.identityVerification}
+              // placeholder="Government ID (Aadhaar, PAN, Passport)"
+              value={formData.mobileNumber}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
+              <div >
+                <label
+                  className="text-sm font-medium text-gray-700 mt-5 mb-2 block"
+                >
+                  Identity Verification
+                </label>
+                
+                <input
+                  id="identityVerification"
+                  name="identityVerification"
+                  
+                  placeholder="Government ID (Aadhaar, PAN, Passport)"
+                  value={formData.identityVerification}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+            </div>
           </div>
 
           <div>
@@ -313,7 +335,10 @@ const AddSellerForm = () => {
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             ></textarea>
+            
           </div>
+
+          
 
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 block">

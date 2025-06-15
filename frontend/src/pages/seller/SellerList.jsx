@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { ArrowLeft} from "lucide-react"
+import { useNavigate } from "react-router-dom";
 
 const SellerList = () => {
   const [sellers, setSellers] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const navigate = useNavigate();
 
   // Fetch sellers from the backend
   useEffect(() => {
@@ -89,10 +92,17 @@ const SellerList = () => {
 };
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-medium">Seller List ({filteredSellers.length})</h2>
+    <div className="bg-white rounded-lg shadow-sm">
+      <div className="border-b border-gray-200 p-6">
+        <div className="flex justify-between items-center space-x-3 mb-4">
+          <div className="flex items-center space-x-3 mb-4 ">
+              <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <ArrowLeft className="h-5 w-5 text-gray-600" />
+              </button>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Seller List
+              </h2>
+          </div>
           <div className="flex items-center space-x-4">
             <div className="relative">
               <input

@@ -157,7 +157,7 @@ function App() {
               }
             />
             <Route
-              path="/seller/details"
+              path="/seller/details/:id"
               element={
                 <ProtectedRoute>{renderWithLayout(<SellerDashboard />)}</ProtectedRoute>
               }

@@ -1,9 +1,20 @@
 import React from "react"
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { ArrowLeft, Mail, Phone, Edit } from "lucide-react"
 import { Button } from "../../components/ui/button"
 import EditSellerDialog from "./EditSellerDialog"
 
 const SellerDashboard = () => {
+  const { id } = useParams();
+  const [seller, setSeller] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showRejectReason, setShowRejectReason] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const navigate = useNavigate();
+
   const products = [
     {
       id: "0001",
@@ -75,21 +86,61 @@ const SellerDashboard = () => {
     { name: "Add More", image: "/lovable-uploads/placeholder-category.jpg" }
   ]
 
+  useEffect(() => {
+  const fetchSeller = async () => {
+    try {
+      const res = await axios.get(`http://localhost:5000/api/sellers/${id}`);
+      setSeller(res.data);
+    } catch (error) {
+      console.error("Failed to fetch seller data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchSeller();
+}, [id]);
+
+if (loading) {
+  return <div className="p-8">Loading seller information...</div>;
+}
+
+if (!seller) {
+  return <div className="p-8 text-red-600">Seller not found</div>;
+}
+
+const handleStatusChange = async (newStatus, reason = "") => {
+  try {
+    await axios.put(`http://localhost:5000/api/sellers/${seller.sellerId}/status`, {
+      status: newStatus,
+      reason
+    });
+
+    setSeller((prev) => ({ ...prev, status: newStatus }));
+    setShowRejectReason(false);
+    setRejectionReason("");
+  } catch (err) {
+    console.error("Failed to update status", err);
+  }
+};
+
   const handleEdit = productId => {
     console.log("Edit product:", productId)
     // Add edit functionality here
   }
 
+
+
   return (
     <div className="bg-white rounded-lg shadow-sm">
       <div className="border-b border-gray-200 p-6">
         <div className="flex items-center space-x-3 mb-4">
-          <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <button onClick={() => navigate("/seller")} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <ArrowLeft className="h-5 w-5 text-gray-600" />
           </button>
-          <h1 className="text-xl font-semibold text-gray-900">
-            Seller ID :- SLR1001
-          </h1>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Seller ID :- {seller.sellerId}
+          </h2>
         </div>
 
         <div className="flex items-start justify-between">
@@ -100,19 +151,19 @@ const SellerDashboard = () => {
 
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                Name :- (Leo)
+                Name :- {seller.sellerName}
               </h2>
               <div className="flex items-center space-x-4 text-sm text-gray-600">
                 <div className="flex items-center space-x-1">
                   <Mail className="h-4 w-4" />
-                  <span>zarafashionworld@dayrep.com</span>
+                  <span>{seller.email}</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Phone className="h-4 w-4" />
-                  <span>812-801-9335</span>
+                  <span>{seller.mobileNumber}</span>
                 </div>
               </div>
-              <p className="text-sm text-gray-600 mt-1">www.zarafashion.co</p>
+              <p className="text-sm text-gray-600 mt-1">{seller.website}</p>
 
               <div className="mt-3 flex items-center space-x-6">
                 <div className="text-center">
@@ -134,10 +185,11 @@ const SellerDashboard = () => {
             </div>
           </div>
 
+
           <div className="text-right">
             <div className="flex items-center space-x-2 mb-2">
               <h3 className="text-lg font-bold text-gray-900">
-                ZARA International
+                {seller.companyName}
               </h3>
               <EditSellerDialog sellerId="SLR1001" />
             </div>
@@ -170,6 +222,54 @@ const SellerDashboard = () => {
             </div>
           </div>
         </div>
+          <div className="flex flex-col space-y-2">
+  {(seller.status === "Pending" || seller.status === "Rejected") && (
+    <div className="flex items-center space-x-4">
+      <button
+        onClick={() => handleStatusChange("Approved")}
+        className="bg-transparent hover:bg-lime-500 text-lime-700 font-semibold hover:text-white py-2 px-4 border border-lime-500 hover:border-transparent rounded"
+      >
+        Approve
+      </button>
+
+      {seller.status === "Pending" ? (
+        <>
+          <button
+            onClick={() => setShowRejectReason(true)}
+            className="bg-transparent hover:bg-rose-400 text-rose-500 font-semibold hover:text-white py-2 px-4 border border-rose-400 hover:border-transparent rounded"
+          >
+            Reject
+          </button>
+          {showRejectReason && (
+            <div className="mt-4 w-full">
+              <textarea
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                placeholder="Enter reason for rejection"
+                className="w-full border border-red-500 rounded p-2 text-sm"
+                rows={3}
+              />
+              <button
+                onClick={() => handleStatusChange("Rejected", rejectionReason)}
+                className="mt-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm"
+              >
+                Confirm Reject
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
+        <button
+          onClick={() => handleStatusChange("Pending")}
+          className="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-2 px-4 rounded"
+        >
+          Set to Pending
+        </button>
+      )}
+    </div>
+  )}
+</div>
+
       </div>
 
       <div className="p-6">
