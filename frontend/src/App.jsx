@@ -10,6 +10,8 @@ import Chat from "./pages/Chat"
 import Seller from "./pages/seller/Seller"
 import SellerCreate from "./pages/seller/SellerCreate"
 import SellerList from "./pages/seller/SellerList"
+import SellerDashboard from "./pages/seller/SellerDashboard"
+import AddSellerForm from "./pages/seller/AddSellerForm"
 import Product from "./pages/product/Product"
 import Category from "./pages/product/Category"
 import CreateProduct from "./pages/product/CreateProduct"
@@ -143,7 +145,7 @@ function App() {
               }
             />
             <Route
-              path="/seller/create"
+              path="/sellerform"
               element={
                 <ProtectedRoute>{renderWithLayout(<SellerCreate />)}</ProtectedRoute>
               }
@@ -152,6 +154,18 @@ function App() {
               path="/seller/list"
               element={
                 <ProtectedRoute>{renderWithLayout(<SellerList />)}</ProtectedRoute>
+              }
+            />
+            <Route
+              path="/seller/details"
+              element={
+                <ProtectedRoute>{renderWithLayout(<SellerDashboard />)}</ProtectedRoute>
+              }
+            />
+            <Route
+              path="/seller/create"
+              element={
+                <ProtectedRoute>{renderWithLayout(<AddSellerForm />)}</ProtectedRoute>
               }
             />
             <Route

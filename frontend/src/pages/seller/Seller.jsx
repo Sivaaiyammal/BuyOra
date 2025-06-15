@@ -70,7 +70,9 @@ const Seller = () => {
               </div>
               <div className="mt-4">
                 <p className="text-sm text-gray-600">
-                  {seller.company} ({seller.productCategories})
+                  {seller.company} {seller.productCategories?.length
+                      ? `(${seller.productCategories.map(cat => cat.name).join(", ")})`
+                      : "(N/A)"}
                 </p>
                 <p className="text-sm mt-1">Seller ID: {seller.sellerId}</p>
                 <a

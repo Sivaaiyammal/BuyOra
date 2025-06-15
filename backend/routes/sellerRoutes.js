@@ -2,20 +2,18 @@ const express = require('express');
 const router = express.Router();
 const Seller = require('../models/Seller');
 
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
   try {
-    const seller = new Seller(req.body);
+    // console.log("Received body:", req.body);
+    const seller = new Seller(req.body); // This may throw if schema doesn't match
     await seller.save();
-    res.status(201).json({ message: 'Seller added successfully', seller });
-  } catch (err) {
-    if (err.code === 11000 && err.keyValue.email) {
-      res.status(400).json({ message: 'Email already exists' });
-    } else {
-      console.error('Failed to add seller:', err);
-      res.status(500).json({ message: 'Server error' });
-    }
+    res.status(201).json({ message: "Seller created", seller });
+  } catch (error) {
+    console.error("Seller save error:", error);
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 });
+
 
 router.get('/next-id', async (req, res) => {
   try {
@@ -48,7 +46,7 @@ router.get('/next-id', async (req, res) => {
 
 router.get('/', async (req, res) => {
   try {
-    const sellers = await Seller.find();
+    const sellers = await Seller.find().populate("productCategories", "name");;
     res.status(200).json(sellers);
   } catch (err) {
     console.error('Failed to fetch sellers:', err);

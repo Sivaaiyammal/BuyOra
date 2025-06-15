@@ -282,7 +282,7 @@ const CreateProduct = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Product Name
+                    Product Name<span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -295,7 +295,7 @@ const CreateProduct = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Item Code
+                    Item Code<span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -321,7 +321,7 @@ const CreateProduct = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Category
+                    Category<span className="text-red-500">*</span>
                   </label>
                   <CreatableSelect
                     isClearable
@@ -369,7 +369,7 @@ const CreateProduct = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Brand Name
+                    Brand Name<span className="text-red-500">*</span>
                   </label>
                   <CreatableSelect
                     isClearable
@@ -416,7 +416,7 @@ const CreateProduct = () => {
 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Size
+                    Size<span className="text-red-500">*</span>
                   </label>
                   <div className="flex flex-wrap gap-2">
                     {sizes.map(size => {

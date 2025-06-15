@@ -14,20 +14,20 @@ const Category = () => {
 
 
   // Fetch categories and brands on mount
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      const [catRes, brandRes] = await Promise.all([
-        axios.get(`${BASE_URL}/api/categories`),
-        axios.get(`${BASE_URL}/api/brands`)
-      ]);
-      setCategories(catRes.data);
-      setBrands(brandRes.data);
-      if (catRes.data.length > 0) {
-        setSelectedCategory(catRes.data[0].name);
-      }
-    };
-    fetchInitialData();
-  }, []);
+  // useEffect(() => {
+  //   const fetchInitialData = async () => {
+  //     const [catRes, brandRes] = await Promise.all([
+  //       axios.get(`${BASE_URL}/api/categories`),
+  //       axios.get(`${BASE_URL}/api/brands`)
+  //     ]);
+  //     setCategories(catRes.data);
+  //     setBrands(brandRes.data);
+  //     if (catRes.data.length > 0) {
+  //       setSelectedCategory(catRes.data[0].name);
+  //     }
+  //   };
+  //   fetchInitialData();
+  // }, []);
 
   // Fetch products when category changes
 useEffect(() => {
